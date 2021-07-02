@@ -1,1 +1,1 @@
-# sef-adjusting-firewall
+# self-adjusting-firewall
