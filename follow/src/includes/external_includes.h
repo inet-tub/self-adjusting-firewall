@@ -10,21 +10,21 @@
 
 
 /* From TupleMerge */
-#include "ElementaryClasses.h"
-#include "PartitionSort/SortableRulesetPartitioner.h"
-#include "IO/InputReader.h"
-#include "IO/OutputWriter.h"
-#include "Simulation.h"
-#include "PartitionSort/MITree.h"
-#include "PartitionSort/DISCPAC.h"
-#include "PartitionSort/RuleSplitter.h"
-#include "BruteForce.h"
-#include "TupleMerge/TupleMergeOnline.h"
-#include "TupleMerge/TupleMergeOffline.h"
-#include "OVS/cmap.h"
-#include "OVS/TupleSpaceSearch.h"
-#include "ClassBenchTraceGenerator/trace_tools.h"
-#include "PartitionSort/PartitionSort.h"
+#include "./../../tuplemerge/ElementaryClasses.h"
+#include "./../../tuplemerge/PartitionSort/SortableRulesetPartitioner.h"
+#include "./../../tuplemerge/IO/InputReader.h"
+#include "./../../tuplemerge/IO/OutputWriter.h"
+#include "./../../tuplemerge/Simulation.h"
+#include "./../../tuplemerge/PartitionSort/MITree.h"
+#include "./../../tuplemerge/PartitionSort/DISCPAC.h"
+#include "./../../tuplemerge/PartitionSort/RuleSplitter.h"
+#include "./../../tuplemerge/BruteForce.h"
+#include "./../../tuplemerge/TupleMerge/TupleMergeOnline.h"
+#include "./../../tuplemerge/TupleMerge/TupleMergeOffline.h"
+#include "./../../tuplemerge/OVS/cmap.h"
+#include "./../../tuplemerge/OVS/TupleSpaceSearch.h"
+#include "./../../tuplemerge/ClassBenchTraceGenerator/trace_tools.h"
+#include "./../../tuplemerge/PartitionSort/PartitionSort.h"
 
 
 #endif /* INCLUDES_EXTERNAL_INCLUDES_H_ */

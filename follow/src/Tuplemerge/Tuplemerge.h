@@ -8,8 +8,8 @@
 #ifndef TUPLEMERGE_TUPLEMERGE_H_
 #define TUPLEMERGE_TUPLEMERGE_H_
 
-#include "ElementaryClasses.h"
-#include <TupleMerge/TupleMergeOnline.h>
+#include "./../../tuplemerge/ElementaryClasses.h"
+#include "./../../tuplemerge/TupleMerge/TupleMergeOnline.h"
 #include "./../classifier/baseclassifier.h"
 
 namespace simulator{

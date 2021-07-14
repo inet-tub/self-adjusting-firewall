@@ -8,7 +8,7 @@
 #ifndef FOLLOW_FOLLOW_H_
 #define FOLLOW_FOLLOW_H_
 
-#include "ElementaryClasses.h"
+#include "./../../tuplemerge/ElementaryClasses.h"
 #include "./../classifier/baseclassifier.h"
 
 #include <unordered_map>

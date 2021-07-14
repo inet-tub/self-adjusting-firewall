@@ -8,7 +8,7 @@
 #ifndef CLASSIFIER_BASECLASSIFIER_H_
 #define CLASSIFIER_BASECLASSIFIER_H_
 
-#include "ElementaryClasses.h"
+#include "./../../tuplemerge/ElementaryClasses.h"
 #include <vector>
 #include <list>
 #include <chrono>
