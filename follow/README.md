@@ -1,6 +1,6 @@
 # build
 
-Run the `setup.sh` script to automate the build process.
+Run the `setup.sh` script to automate the build process. **Make failing when cloned from github. Makefile issues somewhere with absolute paths**
 ```bash
 
 ./setup.sh
