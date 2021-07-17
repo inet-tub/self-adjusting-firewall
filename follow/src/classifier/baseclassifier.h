@@ -46,7 +46,7 @@ public:
 	/* Returns the time taken for creating the datastrucutre (tree/table/list) for the given ruleset. */
 	virtual double GetInitDelay() const=0;
 
-	double initDelay;
+	double initDelay=0;
 
 	unsigned int TotalRules=0;
 

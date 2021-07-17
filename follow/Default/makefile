@@ -16,6 +16,7 @@ RM := rm
 -include tuplemerge/ClassBenchTraceGenerator/subdir.mk
 -include tuplemerge/subdir.mk
 -include src/follow/subdir.mk
+-include src/cuts/subdir.mk
 -include src/cmd/subdir.mk
 -include src/classifier/subdir.mk
 -include src/Tuplemerge/subdir.mk

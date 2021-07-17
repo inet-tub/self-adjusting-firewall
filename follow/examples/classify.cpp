@@ -15,10 +15,11 @@
 #include <sstream>
 
 #include "./../src/includes/external_includes.h"
-#include "./../src/follow/follow.h"
 #include "./../src/includes/Assert.h"
-
 #include "./../src/cmd/CommandLine.h"
+
+#include "./../src/follow/follow.h"
+#include "./../src/cuts/cuts.h"
 
 using namespace std;
 using namespace simulator;
@@ -35,8 +36,9 @@ int main(int argc, char* argv[]) {
 
 	cmd.Get("ruleset",rulesetFile);
 	cmd.Get("trace",traceFile);
+	cmd.Get("alg",alg);
 
-	vector<Rule> rules = InputReader::ReadFilterFile(rulesetFile);
+ 	vector<Rule> rules = InputReader::ReadFilterFile(rulesetFile);
 	vector <Packet> trace = InputReader::ReadPackets(traceFile);
 
 	std::cout << "rulesetSize " << rules.size() << std::endl;
@@ -57,6 +59,12 @@ int main(int argc, char* argv[]) {
 //			count++;
 		}
 		std::cout << "Average nodes traversed " << classifier.GetAvgNodesTraversed() << std::endl;
+	}
+	else{
+		cuts CutsClassifier;
+		CutsClassifier.parseargs(&cmd);
+		CutsClassifier.CreateClassifier(rules);
+		std::cout << "InitDelayms " << CutsClassifier.GetInitDelay() << std::endl;
 	}
 
 	return 0;

@@ -160,7 +160,7 @@ follow::AccessRule(const Packet& p){
 	    		node->nextNode = temp->nextNode;
 	    		temp->nextNode->prevNode = node;
 	    		temp->nextNode = node;
-	    		node=temp; /* This triggers the recursive more following the dependencies, until "temp" becomes the head. */
+	    		node=temp; /* This triggers the recursive move following the dependencies, until "temp" becomes the head. */
 	    	}
 	    	else { /* if no dependency is found, then we can move the node to the head */
 	    		ASSERT(temp==head, "something went wrong in the follow algorithm!");

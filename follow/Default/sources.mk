@@ -27,6 +27,7 @@ examples \
 src/Tuplemerge \
 src/classifier \
 src/cmd \
+src/cuts \
 src/follow \
 tuplemerge/ClassBenchTraceGenerator \
 tuplemerge/IO \
