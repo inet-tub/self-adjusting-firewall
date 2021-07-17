@@ -40,12 +40,6 @@ struct range{
   unsigned long long high;
 };
 
-struct pc_rule{
-  int priority;
-  struct range field[MAXDIMENSIONS];
-  int siplen, diplen;
-  unsigned sip[4], dip[4];
-};
 
 struct node
 {
