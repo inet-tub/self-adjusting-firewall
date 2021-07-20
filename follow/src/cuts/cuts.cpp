@@ -1,13 +1,12 @@
 /*
  * cuts.cpp
  *
- *  Created on: Jul 16, 2021
+ *  Created on: Jul 19, 2021
  *      Author: vamsi
  */
 
-// Copyright to be added later
-// Originally from Efficuts authors. Majority of the code in this file is from the original implementation.
-// Modified by Vamsi
+#include "cuts.h"
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,30 +17,37 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
+#include <getopt.h>
 
 using namespace std;
 
 
 
-#include "cuts.h"
-#include "./../includes/Assert.h"
-#include <stdint.h>
-
-
 namespace simulator{
 
+cuts::cuts() {
 
-bool mycomparison(Rule* first,Rule* second)
+
+}
+
+cuts::~cuts() {
+
+}
+
+static bool
+cuts::mycomparison(pc_rule* first,pc_rule* second)
 {
   return (first->priority < second->priority);
 }
 
-bool myequal(Rule* first,Rule* second)
+static bool
+cuts::myequal(pc_rule* first,pc_rule* second)
 {
   return (first->priority == second->priority);
 }
 
-bool mystatsort(TreeStat* first,TreeStat* second)
+static bool
+cuts::mystatsort(TreeStat* first,TreeStat* second)
 {
   if (first->Max_Depth > second->Max_Depth)
   {
@@ -67,7 +73,8 @@ bool mystatsort(TreeStat* first,TreeStat* second)
   }
 }
 
-bool mymemsort(MemBin* first,MemBin* second)
+static bool
+cuts::mymemsort(MemBin* first,MemBin* second)
 {
   if (first->Max_Depth < second->Max_Depth)
   {
@@ -93,7 +100,8 @@ bool mymemsort(MemBin* first,MemBin* second)
   }
 }
 
-int cuts::CheckIPBounds(range fld)
+int
+cuts::CheckIPBounds(range fld)
 {
   if (fld.low > 0xFFFFFFFF)
   {
@@ -113,7 +121,8 @@ int cuts::CheckIPBounds(range fld)
   return 0;
 }
 
-int cuts::CheckPortBounds(range fld)
+int
+cuts::CheckPortBounds(range fld)
 {
   if (fld.low > 0xFFFF)
   {
@@ -133,7 +142,8 @@ int cuts::CheckPortBounds(range fld)
   return 0;
 }
 
-int cuts::CheckProtoBounds(range fld)
+int
+cuts::CheckProtoBounds(range fld)
 {
   if (fld.low > 0xFF)
   {
@@ -153,211 +163,230 @@ int cuts::CheckProtoBounds(range fld)
   return 0;
 }
 
-void cuts::parseargs(CommandLine* cmd) {
-  int	c;
-  bool	ok = 1;
+void
+cuts::parseargs(CommandLine* cmd) {
 
-  bool help=false;
+	  bool	ok = 1;
 
-  cmd->Get("bucketSize",bucketSize);
-  cmd->Get("spfac",spfac);
-  cmd->Get("num_intervals",num_intervals);
-  cmd->Get("hypercuts",hypercuts);
-  cmd->Get("Num_Rules_Moved_Up",Num_Rules_Moved_Up);
-  cmd->Get("compressionON",compressionON);
-  cmd->Get("binningON",binningON);
-  cmd->Get("mergingON",mergingON);
-  cmd->Get("bin",bin);
-  cmd->Get("IPbin",IPbin);
-  cmd->Get("thirtyone",thirtyone);
-  cmd->Get("cutsHelp",help);
+	  bool help=false;
+	  string file;
 
-  if (help){
-	  printf("valid options:\n "
-			  "--bucketSize bucketSize \n"
-			  "--spfac spfac\n"
-			  "--num_intervals num_intervals\n"
-			  "--hypercuts (0 for hicuts| 1 for hypercuts)\n"
-			  "-u pushup\n"
-			  "-c (0|1)\n"
-			  "--bin bin\n"
-			  "--IPbin IPbin\n"
-			  "--cutsHelp\n"
-			  );
-	  exit(1);
-  }
+	  cmd->Get("bucketSize",bucketSize);
+
+	  cmd->Get("spfac",spfac);
+
+	  cmd->Get("num_intervals",num_intervals);
+
+	  cmd->Get("hypercuts",hypercuts);
+
+	  cmd->Get("ruleset", file);
+	  fpr = fopen(file.c_str(), "r");
+
+	  cmd->Get("pushup",Num_Rules_Moved_Up);
+
+	  cmd->Get("compress",compressionON);
+
+	  cmd->Get("binON",binningON);
+
+	  cmd->Get("mergingON",mergingON);
+
+	  cmd->Get("bin",bin);
+
+	  cmd->Get("IPbin",IPbin);
+
+	  cmd->Get("thirtyone",thirtyone);
+
+	  cmd->Get("cutsHelp",help);
+
+	  if (help){
+		  printf("valid options:\n "
+		  		  			  "--bucketSize <bucketSize> \n"
+		  		  			  "--spfac <spfac>\n"
+		  		  			  "--num_intervals <num_intervals>\n"
+		  		  			  "--hypercuts <0 for hicuts | 1 for hypercuts>\n"
+		  		  			  "--pushup <num move up>\n"
+		  		  			  "--compress <0 or 1>\n"
+		  		  			  "--binON <0 or 1>\n"
+			  	  	  	  "--merging <0 or 1>\n"
+                    "--bin <0 to 2>\n"
+		  		  			  "--IPbin <IPbin>\n"
+		  		  			  "--cutsHelp\n"
+		  		  			  );
+		  exit(1);
+	  }
 
 
-  if(bucketSize <= 0){
-    printf("bucketSize should be > 0\n");
-    ok = 0;
-  }
+	  if(bucketSize <= 0){
+	    printf("bucketSize should be > 0\n");
+	    ok = 0;
+	  }
 
-  if(spfac < 0){
-    printf("space factor should be >= 0\n");
-    ok = 0;
-  }
+	  if(spfac < 0){
+	    printf("space factor should be >= 0\n");
+	    ok = 0;
+	  }
 
-  if (compressionON > 1) {
-    printf("c can be only 0 - no compress, 1 - linear\n");
-    ok = 0;
-  }
+	  if (compressionON > 1) {
+	    printf("c can be only 0 - no compress, 1 - linear\n");
+	    ok = 0;
+	  }
 
-  if (binningON > 2) {
-    printf("g can be only 0 - no binning, 1 - binning 2 - static\n");
-    ok = 0;
-  }
+	  if (binningON > 2) {
+	    printf("g can be only 0 - no binning, 1 - binning 2 - static\n");
+	    ok = 0;
+	  }
 
-  if (hypercuts > 1) {
-    printf("m can be only 0 - hicut, 1 - hypercut\n");
-    ok = 0;
-  }
+	  if (hypercuts > 1) {
+	    printf("m can be only 0 - hicut, 1 - hypercut\n");
+	    ok = 0;
+	  }
 
-  if(num_intervals < 0){
-    printf("num_intervals should be >= 0\n");
-    ok = 0;
-  }
+	  if(num_intervals < 0){
+	    printf("num_intervals should be >= 0\n");
+	    ok = 0;
+	  }
 
-  if(fpr == NULL){
-    printf("can't open ruleset file\n");
-    ok = 0;
-  }
+	  if(fpr == NULL){
+	    printf("can't open ruleset file\n");
+	    ok = 0;
+	  }
 
-  if (bin < 0.0 || bin > 1.0)
-  {
-    printf("bin should be [0,1]\n");
-    ok = 0;
-  }
-  if (IPbin < 0.0 || IPbin > 1.0)
-  {
-    printf("IP bin should be [0,1]\n");
-    ok = 0;
-  }
-  if (!ok) {
-	  fprintf(stderr,"valid options:\n "
-	  			  "--bucketSize bucketSize \n"
-	  			  "--spfac spfac\n"
-	  			  "--num_intervals num_intervals\n"
-	  			  "--hypercuts (0 for hicuts| 1 for hypercuts)\n"
-	  			  "-u pushup\n"
-	  			  "-c (0|1)\n"
-	  			  "--bin bin\n"
-	  			  "--IPbin IPbin\n"
-	  			  "--cutsHelp\n"
-	  			  );
-    exit(1);
-  }
+	  if (bin < 0.0 || bin > 1.0)
+	  {
+	    printf("bin should be [0,1]\n");
+	    ok = 0;
+	  }
+	  if (IPbin < 0.0 || IPbin > 1.0)
+	  {
+	    printf("IP bin should be [0,1]\n");
+	    ok = 0;
+	  }
+	  if (!ok) {
+		  fprintf(stderr,"valid options:\n "
+		  			  "--bucketSize <bucketSize> \n"
+		  			  "--spfac <spfac>\n"
+		  			  "--num_intervals <num_intervals>\n"
+		  			  "--hypercuts <0 for hicuts | 1 for hypercuts>\n"
+		  			  "--pushup <num move up>\n"
+		  			  "--compress <0 or 1>\n"
+		  			  "--bin <0 or 1>\n"
+		  			  "--IPbin <IPbin>\n"
+		  			  "--cutsHelp\n"
+		  			  );
+	    exit(1);
+	  }
 
-  printf("******************************************\n");
-  printf("Bucket Size =  %d\n", bucketSize);
-  printf("Space Factor = %f\n", spfac);
-  printf("bin = %f\n",bin);
-	printf("IPbin = %f\n",IPbin);
-  printf("hypercuts = %d\n",hypercuts);
-  printf("Num_Rules_Moved_Up = %d\n",Num_Rules_Moved_Up);
-  printf("compressionON = %d\n",compressionON);
-  printf("binningON = %d\n",binningON);
-  printf("mergingON = %d\n",mergingON);
-  printf("num_intervals = %d\n",num_intervals);
-  printf("******************************************\n");
+	  printf("******************************************\n");
+	  printf("Bucket Size =  %d\n", bucketSize);
+	  printf("Space Factor = %f\n", spfac);
+	  printf("bin = %f\n",bin);
+		printf("IPbin = %f\n",IPbin);
+	  printf("hypercuts = %d\n",hypercuts);
+	  printf("Num_Rules_Moved_Up = %d\n",Num_Rules_Moved_Up);
+	  printf("compressionON = %d\n",compressionON);
+	  printf("binningON = %d\n",binningON);
+	  printf("mergingON = %d\n",mergingON);
+	  printf("num_intervals = %d\n",num_intervals);
+	  printf("******************************************\n");
 }
 
-void cuts::ClearMem(node *curr_node)
+void
+cuts::ClearMem(node *curr_node)
 {
   curr_node->classifier.clear();
   curr_node->children.clear();
+  curr_node->nextGen.clear();
   delete curr_node;
-};
+  curr_node = NULL;
+}
 
-bool cuts::IsPowerOfTwo(int x)
+bool
+cuts::IsPowerOfTwo(int x)
 {
   return (x & (x - 1)) == 0;
 }
 
-Rule cuts::get_bound(node *curr_node,int *offset)
+pc_rule
+cuts::get_bound(node *curr_node,int *offset)
 {
-  Rule boundary;
+  pc_rule boundary;
   unsigned long long interval;
 
   for (int i = 0;i < MAXDIMENSIONS;i++)
   {
-    interval = curr_node->boundary.range[i][HighDim] - curr_node->boundary.range[i][LowDim] + 1;
+    interval = curr_node->boundary.field[i].high - curr_node->boundary.field[i].low + 1;
     interval = interval / curr_node->cuts[i];
-    boundary.range[i][LowDim] = curr_node->boundary.range[i][LowDim] + offset[i] * interval;
+    boundary.field[i].low = curr_node->boundary.field[i].low + offset[i] * interval;
     if (offset[i] == curr_node->cuts[i] - 1)
-      boundary.range[i][HighDim] = curr_node->boundary.range[i][HighDim];
+      boundary.field[i].high = curr_node->boundary.field[i].high;
     else
       if (interval == 0)
-        boundary.range[i][HighDim] = boundary.range[i][LowDim];
+        boundary.field[i].high = boundary.field[i].low;
       else
-        boundary.range[i][HighDim] = boundary.range[i][LowDim] + interval - 1;
+        boundary.field[i].high = boundary.field[i].low + interval - 1;
   }
   // check the node's bounds
-  range ra; ra.low = boundary.range[0][LowDim]; ra.high = boundary.range[0][HighDim];
-  if (CheckIPBounds(ra))
+  if (CheckIPBounds(boundary.field[0]))
   {
     printf("Error: get_bound bounds check for 0 failed\n");
     printf("[%llu - %llu] => [%llu - %llu] @ %d\n",
-      curr_node->boundary.range[0][LowDim],curr_node->boundary.range[0][HighDim],
-      boundary.range[0][LowDim],boundary.range[0][HighDim],curr_node->cuts[0]);
+      curr_node->boundary.field[0].low,curr_node->boundary.field[0].high,
+      boundary.field[0].low,boundary.field[0].high,curr_node->cuts[0]);
     exit(1);
   }
-  ra.low = boundary.range[1][LowDim]; ra.high = boundary.range[1][HighDim];
-  if (CheckIPBounds(ra))
+  if (CheckIPBounds(boundary.field[1]))
   {
     printf("Error: get_bound bounds check for 1 failed\n");
     printf("[%llu - %llu] => [%llu - %llu] @ %d\n",
-      curr_node->boundary.range[1][LowDim],curr_node->boundary.range[1][HighDim],
-      boundary.range[1][LowDim],boundary.range[1][HighDim],curr_node->cuts[1]);
+      curr_node->boundary.field[1].low,curr_node->boundary.field[1].high,
+      boundary.field[1].low,boundary.field[1].high,curr_node->cuts[1]);
     exit(1);
   }
-  ra.low = boundary.range[2][LowDim]; ra.high = boundary.range[2][HighDim];
-  if (CheckPortBounds(ra))
+  if (CheckPortBounds(boundary.field[2]))
   {
     printf("Error: get_bound bounds check for 2 failed\n");
     printf("[%llu - %llu] => [%llu - %llu] @ %d\n",
-      curr_node->boundary.range[2][LowDim],curr_node->boundary.range[2][HighDim],
-      boundary.range[2][LowDim],boundary.range[2][HighDim],curr_node->cuts[2]);
+      curr_node->boundary.field[2].low,curr_node->boundary.field[2].high,
+      boundary.field[2].low,boundary.field[2].high,curr_node->cuts[2]);
     exit(1);
   }
-  ra.low = boundary.range[3][LowDim]; ra.high = boundary.range[3][HighDim];
-  if (CheckPortBounds(ra))
+  if (CheckPortBounds(boundary.field[3]))
   {
     printf("Error: get_bound bounds check for 3 failed\n");
     printf("[%llu - %llu] => [%llu - %llu] @ %d\n",
-      curr_node->boundary.range[3][LowDim],curr_node->boundary.range[3][HighDim],
-      boundary.range[3][LowDim],boundary.range[3][HighDim],curr_node->cuts[3]);
+      curr_node->boundary.field[3].low,curr_node->boundary.field[3].high,
+      boundary.field[3].low,boundary.field[3].high,curr_node->cuts[3]);
     exit(1);
   }
-  ra.low = boundary.range[4][LowDim]; ra.high = boundary.range[4][HighDim];
-  if (CheckProtoBounds(ra))
+  if (CheckProtoBounds(boundary.field[4]))
   {
     printf("Error: get_bound bounds check for 4 failed\n");
     printf("[%llu - %llu] => [%llu - %llu] @ %d\n",
-      curr_node->boundary.range[4][LowDim],curr_node->boundary.range[4][HighDim],
-      boundary.range[4][LowDim],boundary.range[4][HighDim],curr_node->cuts[4]);
+      curr_node->boundary.field[4].low,curr_node->boundary.field[4].high,
+      boundary.field[4].low,boundary.field[4].high,curr_node->cuts[4]);
     exit(1);
   }
   return boundary;
 }
 
-bool cuts::is_present(Rule boundary,Rule *rule)
+bool
+cuts::is_present(pc_rule boundary,pc_rule *rule)
 {
-  if ( ((rule->range[0][LowDim]  <= boundary.range[0][LowDim]  && rule->range[0][HighDim] >= boundary.range[0][LowDim])  ||  // cuts to the left of range
-        (rule->range[0][HighDim] >= boundary.range[0][HighDim] && rule->range[0][LowDim]  <= boundary.range[0][HighDim]) ||  // cuts to the right of range
-        (rule->range[0][LowDim]  >= boundary.range[0][LowDim]  && rule->range[0][HighDim] <= boundary.range[0][HighDim])) && // completely inside the range
-      ((rule->range[1][LowDim]  <= boundary.range[1][LowDim]  && rule->range[1][HighDim] >= boundary.range[1][LowDim])  ||  // cuts to the left of range
-       (rule->range[1][HighDim] >= boundary.range[1][HighDim] && rule->range[1][LowDim]  <= boundary.range[1][HighDim]) ||  // cuts to the right of range
-       (rule->range[1][LowDim]  >= boundary.range[1][LowDim]  && rule->range[1][HighDim] <= boundary.range[1][HighDim])) && // completely inside the range
-      ((rule->range[2][LowDim]  <= boundary.range[2][LowDim]  && rule->range[2][HighDim] >= boundary.range[2][LowDim])  ||  // cuts to the left of range
-       (rule->range[2][HighDim] >= boundary.range[2][HighDim] && rule->range[2][LowDim]  <= boundary.range[2][HighDim]) ||  // cuts to the right of range
-       (rule->range[2][LowDim]  >= boundary.range[2][LowDim]  && rule->range[2][HighDim] <= boundary.range[2][HighDim])) && // completely inside the range
-      ((rule->range[3][LowDim]  <= boundary.range[3][LowDim]  && rule->range[3][HighDim] >= boundary.range[3][LowDim])  ||  // cuts to the left of range
-       (rule->range[3][HighDim] >= boundary.range[3][HighDim] && rule->range[3][LowDim]  <= boundary.range[3][HighDim]) ||  // cuts to the right of range
-       (rule->range[3][LowDim]  >= boundary.range[3][LowDim]  && rule->range[3][HighDim] <= boundary.range[3][HighDim])) && // completely inside the range
-      ((rule->range[4][LowDim]  <= boundary.range[4][LowDim]  && rule->range[4][HighDim] >= boundary.range[4][LowDim])  ||  // cuts to the left of range
-       (rule->range[4][HighDim] >= boundary.range[4][HighDim] && rule->range[4][LowDim]  <= boundary.range[4][HighDim]) ||  // cuts to the right of range
-       (rule->range[4][LowDim]  >= boundary.range[4][LowDim]  && rule->range[4][HighDim] <= boundary.range[4][HighDim])) )  // completely inside the range
+  if ( ((rule->field[0].low  <= boundary.field[0].low  && rule->field[0].high >= boundary.field[0].low)  ||  // cuts to the left of range
+        (rule->field[0].high >= boundary.field[0].high && rule->field[0].low  <= boundary.field[0].high) ||  // cuts to the right of range
+        (rule->field[0].low  >= boundary.field[0].low  && rule->field[0].high <= boundary.field[0].high)) && // completely inside the range
+      ((rule->field[1].low  <= boundary.field[1].low  && rule->field[1].high >= boundary.field[1].low)  ||  // cuts to the left of range
+       (rule->field[1].high >= boundary.field[1].high && rule->field[1].low  <= boundary.field[1].high) ||  // cuts to the right of range
+       (rule->field[1].low  >= boundary.field[1].low  && rule->field[1].high <= boundary.field[1].high)) && // completely inside the range
+      ((rule->field[2].low  <= boundary.field[2].low  && rule->field[2].high >= boundary.field[2].low)  ||  // cuts to the left of range
+       (rule->field[2].high >= boundary.field[2].high && rule->field[2].low  <= boundary.field[2].high) ||  // cuts to the right of range
+       (rule->field[2].low  >= boundary.field[2].low  && rule->field[2].high <= boundary.field[2].high)) && // completely inside the range
+      ((rule->field[3].low  <= boundary.field[3].low  && rule->field[3].high >= boundary.field[3].low)  ||  // cuts to the left of range
+       (rule->field[3].high >= boundary.field[3].high && rule->field[3].low  <= boundary.field[3].high) ||  // cuts to the right of range
+       (rule->field[3].low  >= boundary.field[3].low  && rule->field[3].high <= boundary.field[3].high)) && // completely inside the range
+      ((rule->field[4].low  <= boundary.field[4].low  && rule->field[4].high >= boundary.field[4].low)  ||  // cuts to the left of range
+       (rule->field[4].high >= boundary.field[4].high && rule->field[4].low  <= boundary.field[4].high) ||  // cuts to the right of range
+       (rule->field[4].low  >= boundary.field[4].low  && rule->field[4].high <= boundary.field[4].high)) )  // completely inside the range
   {
     return true;
   }
@@ -368,42 +397,44 @@ bool cuts::is_present(Rule boundary,Rule *rule)
 
 }
 
-void cuts::modifyrule(Rule boundary,Rule *rule)
+void
+cuts::modifyrule(pc_rule boundary,pc_rule *rule)
 {
   for (int i = 0;i < MAXDIMENSIONS;i++)
   {
-    if (rule->range[i][LowDim] < boundary.range[i][LowDim])
-      rule->range[i][LowDim] = boundary.range[i][LowDim];
-    if (rule->range[i][HighDim] > boundary.range[i][HighDim])
-      rule->range[i][HighDim] = boundary.range[i][HighDim];
+    if (rule->field[i].low < boundary.field[i].low)
+      rule->field[i].low = boundary.field[i].low;
+    if (rule->field[i].high > boundary.field[i].high)
+      rule->field[i].high = boundary.field[i].high;
   }
 }
 
-bool cuts::is_equal(Rule rule1,Rule rule2, Rule boundary)
+bool
+cuts::is_equal(pc_rule rule1,pc_rule rule2, pc_rule boundary)
 {
   int count = 0;
   range r1, r2;
   for (int i = 0;i < MAXDIMENSIONS;i++)
   {
-    if (rule1.range[i][LowDim] > boundary.range[i][LowDim]) {
-      r1.low = rule1.range[i][LowDim];
+    if (rule1.field[i].low > boundary.field[i].low) {
+      r1.low = rule1.field[i].low;
     } else {
-      r1.low = boundary.range[i][LowDim];
+      r1.low = boundary.field[i].low;
     }
-    if (rule1.range[i][HighDim] < boundary.range[i][HighDim]) {
-      r1.high = rule1.range[i][HighDim];
+    if (rule1.field[i].high < boundary.field[i].high) {
+      r1.high = rule1.field[i].high;
     } else {
-      r1.high = boundary.range[i][HighDim];
+      r1.high = boundary.field[i].high;
     }
-    if (rule2.range[i][LowDim] > boundary.range[i][LowDim]) {
-      r2.low = rule2.range[i][LowDim];
+    if (rule2.field[i].low > boundary.field[i].low) {
+      r2.low = rule2.field[i].low;
     } else {
-      r2.low = boundary.range[i][LowDim];
+      r2.low = boundary.field[i].low;
     }
-    if (rule2.range[i][HighDim] < boundary.range[i][HighDim]) {
-      r2.high = rule2.range[i][HighDim];
+    if (rule2.field[i].high < boundary.field[i].high) {
+      r2.high = rule2.field[i].high;
     } else {
-      r2.high = boundary.range[i][HighDim];
+      r2.high = boundary.field[i].high;
     }
     if (r1.low <= r2.low && r1.high >= r2.high)
     {
@@ -417,24 +448,26 @@ bool cuts::is_equal(Rule rule1,Rule rule2, Rule boundary)
     return false;
 }
 
-void cuts::remove_redund(node *curr_node)
+void
+cuts::remove_redund(node *curr_node)
 {
-  list <Rule*> rulelist;
+  list <pc_rule*> rulelist;
   rulelist.clear();
-
-  for (auto rule : curr_node->classifier)
+  for (list<pc_rule*>::iterator rule = curr_node->classifier.begin();
+      rule != curr_node->classifier.end();++rule)
   {
     int found = 0;
-    for (auto mule : rulelist)
+    for (list<pc_rule*>::iterator mule = rulelist.begin();
+        mule != rulelist.end();++mule)
     {
-      if (is_equal(*mule, *rule, curr_node->boundary) == true)
+      if (is_equal(**mule,**rule, curr_node->boundary) == true)
       {
         found = 1;
       }
     }
     if (found != 1)
     {
-      rulelist.push_back(rule);
+      rulelist.push_back(*rule);
     }
   }
   // Now add back the rules
@@ -443,7 +476,8 @@ void cuts::remove_redund(node *curr_node)
   curr_node->classifier.unique(myequal);
 }
 
-void cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
+void
+cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
 {
   int unique_elements[MAXDIMENSIONS];
   double average = 0;
@@ -453,19 +487,19 @@ void cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
   {
     list <range> rangelist;
     rangelist.clear();
-    for (list<Rule*>::iterator rule = curr_node->classifier.begin();
+    for (list<pc_rule*>::iterator rule = curr_node->classifier.begin();
         rule != curr_node->classifier.end();++rule)
     {
       int found = 0;
-      if ((*rule)->range[i][LowDim]> curr_node->boundary.range[i][LowDim]) {
-        check.low = (*rule)->range[i][LowDim];
+      if ((*rule)->field[i].low > curr_node->boundary.field[i].low) {
+        check.low = (*rule)->field[i].low;
       } else {
-        check.low = curr_node->boundary.range[i][LowDim];
+        check.low = curr_node->boundary.field[i].low;
       }
-      if ((*rule)->range[i][HighDim]< curr_node->boundary.range[i][HighDim]) {
-        check.high = (*rule)->range[i][HighDim];
+      if ((*rule)->field[i].high < curr_node->boundary.field[i].high) {
+        check.high = (*rule)->field[i].high;
       } else {
-        check.high = curr_node->boundary.range[i][HighDim];
+        check.high = curr_node->boundary.field[i].high;
       }
       for (list <range>::iterator range = rangelist.begin();
           range != rangelist.end();++range)
@@ -486,7 +520,7 @@ void cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
   int dims_cnt = 0;
   for (int i = 0;i < MAXDIMENSIONS;++i)
   {
-    if (curr_node->boundary.range[i][HighDim]> curr_node->boundary.range[i][LowDim])
+    if (curr_node->boundary.field[i].high > curr_node->boundary.field[i].low)
     {
       average += unique_elements[i];
       dims_cnt++;
@@ -497,7 +531,7 @@ void cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
   int max = -1;
   for (int i = 0;i < MAXDIMENSIONS;++i)
   {
-    if (curr_node->boundary.range[i][HighDim] > curr_node->boundary.range[i][LowDim])
+    if (curr_node->boundary.field[i].high > curr_node->boundary.field[i].low)
       if (unique_elements[i] > max)
         max = unique_elements[i];
   }
@@ -508,7 +542,7 @@ void cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
   int dim_count = 0;
   for (int i = 0;i < MAXDIMENSIONS;++i)
   {
-    if (curr_node->boundary.range[i][HighDim] > curr_node->boundary.range[i][LowDim])
+    if (curr_node->boundary.field[i].high > curr_node->boundary.field[i].low)
     {
       if (hypercuts)
       {
@@ -534,15 +568,16 @@ void cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
 
 }
 
-void cuts::cp_node(node* src,node* dest)
+void
+cuts::cp_node(node* src,node* dest)
 {
   dest->depth = src->depth;
 
   dest->boundary.priority = src->boundary.priority;
   for (int i = 0;i < MAXDIMENSIONS;i++)
   {
-    dest->boundary.range[i][LowDim]  = src->boundary.range[i][LowDim];
-    dest->boundary.range[i][HighDim]= src->boundary.range[i][HighDim];
+    dest->boundary.field[i].low  = src->boundary.field[i].low;
+    dest->boundary.field[i].high = src->boundary.field[i].high;
   }
 
   dest->classifier = src->classifier;
@@ -561,20 +596,21 @@ void cuts::cp_node(node* src,node* dest)
 
 }
 
-void cuts::calc_num_cuts_1D(node *root,int dim)
+void
+cuts::calc_num_cuts_1D(node *root,int dim)
 {
   node *curr_node;
 
   int nump = 0;
 
   int spmf = int(floor(root->classifier.size() * spfac));
-  int sm;
+  int sm=0;
 
   int prev_depth = -1;
 
   int offset[MAXDIMENSIONS];
 
-  int Index;
+  int Index=0;
 
   if (!childlist.empty())
   {
@@ -600,8 +636,10 @@ void cuts::calc_num_cuts_1D(node *root,int dim)
         prev_depth = curr_node->depth;
         Index = 0;
       }
-      else
-        break;
+      else{
+//    	  std::cout << "sm " << sm << std::endl;
+    	  break;
+      }
     }
 
     for (int k = 0;k < 2;k++)
@@ -619,11 +657,12 @@ void cuts::calc_num_cuts_1D(node *root,int dim)
 
       child->boundary = get_bound(curr_node,offset);
       child->children.clear();
+      child->nextGen.clear();
 
       for (int i=0;i < MAXDIMENSIONS;i++)
         child->cuts[i] = 1;
 
-      for (list <Rule*>::iterator rule = curr_node->classifier.begin();rule != curr_node->classifier.end();
+      for (list <pc_rule*>::iterator rule = curr_node->classifier.begin();rule != curr_node->classifier.end();
           ++rule)
       {
         if (is_present(child->boundary,(*rule)) == true)
@@ -637,11 +676,11 @@ void cuts::calc_num_cuts_1D(node *root,int dim)
       child->is_compressed = false;
 
       sm += child->classifier.size();
-      if (child->boundary.range[0][LowDim] == child->boundary.range[0][HighDim] &&
-          child->boundary.range[1][LowDim] == child->boundary.range[1][HighDim] &&
-          child->boundary.range[2][LowDim] == child->boundary.range[2][HighDim] &&
-          child->boundary.range[3][LowDim] == child->boundary.range[3][HighDim] &&
-          child->boundary.range[4][LowDim] == child->boundary.range[4][HighDim] )
+      if (child->boundary.field[0].low == child->boundary.field[0].high &&
+          child->boundary.field[1].low == child->boundary.field[1].high &&
+          child->boundary.field[2].low == child->boundary.field[2].high &&
+          child->boundary.field[3].low == child->boundary.field[3].high &&
+          child->boundary.field[4].low == child->boundary.field[4].high )
         if (child->classifier.size() > 1)
         {
           printf("Error: Box 1X1X1X1X1 cannot contain more than 1 rule!\n");
@@ -661,7 +700,8 @@ void cuts::calc_num_cuts_1D(node *root,int dim)
   root->cuts[dim] = 1 << nump;
 }
 
-void cuts::LinearizeChildren(int RowSize)
+void
+cuts::LinearizeChildren(int RowSize)
 {
 
   for (list <node*>::iterator item = childlist.begin();
@@ -672,7 +712,8 @@ void cuts::LinearizeChildren(int RowSize)
 
 }
 
-void cuts::SortChildren()
+void
+cuts::SortChildren()
 {
   list <node*> childlist_sorted;
 
@@ -710,7 +751,8 @@ void cuts::SortChildren()
 
 }
 
-void cuts::calc_num_cuts_2D(node *root,int *dim)
+void
+cuts::calc_num_cuts_2D(node *root,int *dim)
 {
   root->Row = 0;
   root->Column = 0;
@@ -722,7 +764,7 @@ void cuts::calc_num_cuts_2D(node *root,int *dim)
     nump[i] = 0;
 
   int spmf = int(floor(root->classifier.size() * spfac));
-  int sm;
+  int sm=0;
 
   int prev_depth = -1;
 
@@ -781,7 +823,7 @@ void cuts::calc_num_cuts_2D(node *root,int *dim)
       for (int i=0;i < MAXDIMENSIONS;i++)
         child->cuts[i] = 1;
 
-      for (list <Rule*>::iterator rule = curr_node->classifier.begin();rule != curr_node->classifier.end();
+      for (list <pc_rule*>::iterator rule = curr_node->classifier.begin();rule != curr_node->classifier.end();
           ++rule)
       {
         if (is_present(child->boundary,*rule) == true)
@@ -806,11 +848,11 @@ void cuts::calc_num_cuts_2D(node *root,int *dim)
       //    printf("[%d,%d] ",child->Row,child->Column);
 
       sm += child->classifier.size();
-      if (child->boundary.range[0][LowDim] == child->boundary.range[0][HighDim] &&
-          child->boundary.range[1][LowDim] == child->boundary.range[1][HighDim] &&
-          child->boundary.range[2][LowDim] == child->boundary.range[2][HighDim] &&
-          child->boundary.range[3][LowDim] == child->boundary.range[3][HighDim] &&
-          child->boundary.range[4][LowDim] == child->boundary.range[4][HighDim] )
+      if (child->boundary.field[0].low == child->boundary.field[0].high &&
+          child->boundary.field[1].low == child->boundary.field[1].high &&
+          child->boundary.field[2].low == child->boundary.field[2].high &&
+          child->boundary.field[3].low == child->boundary.field[3].high &&
+          child->boundary.field[4].low == child->boundary.field[4].high )
         if (child->classifier.size() > 1)
         {
           printf("Box 1X1X1X1X1 cannot contain more than 1 rule!\n");
@@ -840,7 +882,8 @@ void cuts::calc_num_cuts_2D(node *root,int *dim)
 
 }
 
-void cuts::calc_cuts(node *curr_node)
+void
+cuts::calc_cuts(node *curr_node)
 {
   int select_dim[MAXDIMENSIONS];
   int chosen_dim[2];
@@ -891,24 +934,26 @@ void cuts::calc_cuts(node *curr_node)
 }
 
 // makes a = a + b
-void cuts::createBoundary(node *a,node *b,node *c)
+void
+cuts::createBoundary(node *a,node *b,node *c)
 {
   for (int i = 0;i < MAXDIMENSIONS;i++)
   {
     list<unsigned long long> EndPoints;
     EndPoints.clear();
-    EndPoints.push_back(a->boundary.range[i][LowDim]);
-    EndPoints.push_back(a->boundary.range[i][HighDim]);
-    EndPoints.push_back(b->boundary.range[i][LowDim]);
-    EndPoints.push_back(b->boundary.range[i][HighDim]);
+    EndPoints.push_back(a->boundary.field[i].low);
+    EndPoints.push_back(a->boundary.field[i].high);
+    EndPoints.push_back(b->boundary.field[i].low);
+    EndPoints.push_back(b->boundary.field[i].high);
     EndPoints.sort();
-    c->boundary.range[i][LowDim]  = EndPoints.front();
-    c->boundary.range[i][HighDim] = EndPoints.back();
+    c->boundary.field[i].low  = EndPoints.front();
+    c->boundary.field[i].high = EndPoints.back();
   }
 
 }
 
-int cuts::LogicalMerge(node* a,node* b,int Max)
+int
+cuts::LogicalMerge(node* a,node* b,int Max)
 {
   node *c = new node;
   cp_node(a,c);
@@ -917,7 +962,7 @@ int cuts::LogicalMerge(node* a,node* b,int Max)
 
 
   // create a sort list of rules in a or b in rules
-  list<Rule*> templist = b->classifier;
+  list<pc_rule*> templist = b->classifier;
   c->classifier = a->classifier;
   c->classifier.merge(templist,mycomparison);
   c->classifier.unique(myequal);
@@ -945,11 +990,12 @@ int cuts::LogicalMerge(node* a,node* b,int Max)
   }
 }
 
-bool cuts::NodeCompress(list <node*> &nodelist)
+bool
+cuts::NodeCompress(list <node*> &nodelist)
 {
-  int Max;
+  uint64_t Max=0;
   int merge_possible = compressionON;
-  int original_size = nodelist.size();
+  uint64_t original_size = nodelist.size();
   while (merge_possible)
   {
     merge_possible = 0;
@@ -995,7 +1041,8 @@ bool cuts::NodeCompress(list <node*> &nodelist)
 
 }
 
-void cuts::InitStats(int No_Rules)
+void
+cuts::InitStats(int No_Rules)
 {
   p_record = new TreeStat;
   p_record->Id = treecount++;
@@ -1023,7 +1070,8 @@ void cuts::InitStats(int No_Rules)
   cuts_per_node.clear();
 }
 
-void cuts::NodeStats(node *curr_node)
+void
+cuts::NodeStats(node *curr_node)
 {
 
   if (curr_node->problematic == 1)
@@ -1052,7 +1100,7 @@ void cuts::NodeStats(node *curr_node)
   {
     printf("Error: This problematic node has %d rules!\n",curr_node->classifier.size());
     // Too harsh exit statement here. This depends on the ruleset. Its fine if a node ends up with too many children.
-    // exit(1);
+     exit(1);
   }
 
   if (Num_Partitions != curr_node->children.size()
@@ -1070,32 +1118,27 @@ void cuts::NodeStats(node *curr_node)
     }
 
   // check the node's bounds
-  range ra ; ra.low = curr_node->boundary.range[0][LowDim]; ra.high = curr_node->boundary.range[0][HighDim];
-  if (CheckIPBounds(ra))
+  if (CheckIPBounds(curr_node->boundary.field[0]))
   {
     printf("Error: NodeStat bounds check for 0 failed\n");
     exit(1);
   }
-  ra.low = curr_node->boundary.range[1][LowDim]; ra.high = curr_node->boundary.range[1][HighDim];
-  if (CheckIPBounds(ra))
+  if (CheckIPBounds(curr_node->boundary.field[1]))
   {
     printf("Error: NodeStat bounds check for 1 failed\n");
     exit(1);
   }
-  ra.low = curr_node->boundary.range[2][LowDim]; ra.high = curr_node->boundary.range[2][HighDim];
-  if (CheckPortBounds(ra))
+  if (CheckPortBounds(curr_node->boundary.field[2]))
   {
     printf("Error: NodeStat bounds check for 2 failed\n");
     exit(1);
   }
-  ra.low = curr_node->boundary.range[3][LowDim]; ra.high = curr_node->boundary.range[3][HighDim];
-  if (CheckPortBounds(ra))
+  if (CheckPortBounds(curr_node->boundary.field[3]))
   {
     printf("Error: NodeStat bounds check for 3 failed\n");
     exit(1);
   }
-  ra.low = curr_node->boundary.range[4][LowDim]; ra.high = curr_node->boundary.range[4][HighDim];
-  if (CheckProtoBounds(ra))
+  if (CheckProtoBounds(curr_node->boundary.field[4]))
   {
     printf("Error: NodeStat bounds check for 4 failed\n");
     exit(1);
@@ -1195,7 +1238,8 @@ void cuts::NodeStats(node *curr_node)
 
 }
 
-void cuts::InterValHist(map <unsigned,unsigned long long> interval_per_node)
+void
+cuts::InterValHist(map <unsigned,unsigned long long> interval_per_node)
 {
   for (map<unsigned,unsigned long long>::iterator iter = interval_per_node.begin();
       iter != interval_per_node.end();++iter)
@@ -1203,7 +1247,8 @@ void cuts::InterValHist(map <unsigned,unsigned long long> interval_per_node)
     printf("I %u,%llu\n",(*iter).first,(*iter).second);
   }
 }
-void cuts::CutsHist(map <unsigned,unsigned long long> cuts_per_node)
+void
+cuts::CutsHist(map <unsigned,unsigned long long> cuts_per_node)
 {
   for (map<unsigned,unsigned long long>::iterator iter = cuts_per_node.begin();
       iter != cuts_per_node.end();++iter)
@@ -1212,7 +1257,8 @@ void cuts::CutsHist(map <unsigned,unsigned long long> cuts_per_node)
   }
 }
 
-void cuts::PrintStatRecord(TreeStat *p_record)
+void
+cuts::PrintStatRecord(TreeStat *p_record)
 {
   printf("******************************************\n");
   printf("Tree: %d\n",p_record->Id);
@@ -1245,7 +1291,8 @@ void cuts::PrintStatRecord(TreeStat *p_record)
   CutsHist(p_record->cuts_per_node);
 }
 
-void cuts::PrintStats()
+void
+cuts::PrintStats()
 {
   unsigned long long OVERALL_MEMORY = 0;
   int OVERALL_DEPTH = 0;
@@ -1278,7 +1325,8 @@ void cuts::PrintStats()
 }
 
 
-void cuts::RecordTreeStats()
+void
+cuts::RecordTreeStats()
 {
   p_record->Max_Depth = Max_Depth;
 
@@ -1330,9 +1378,10 @@ void cuts::RecordTreeStats()
 
 }
 
-void cuts::moveRulesUp(node* curr_node) {
+void
+cuts::moveRulesUp(node* curr_node) {
   curr_node->node_has_rule = 0;
-  list<Rule*> rulesMovedUp, setToCheck;
+  list<pc_rule*> rulesMovedUp, setToCheck;
   int emptyIntersect = 1;
   rulesMovedUp = ((curr_node->children).front())->classifier; // start with this set
   // get list of rules that exist in all
@@ -1341,8 +1390,8 @@ void cuts::moveRulesUp(node* curr_node) {
       setToCheck.clear();
       setToCheck = rulesMovedUp;
       rulesMovedUp.clear();
-      for (list<Rule*>::iterator ptr = (*item)->classifier.begin(); ptr != (*item)->classifier.end(); ptr++) {
-        for (list<Rule*>::iterator setptr = setToCheck.begin();setptr != setToCheck.end();setptr++) {
+      for (list<pc_rule*>::iterator ptr = (*item)->classifier.begin(); ptr != (*item)->classifier.end(); ptr++) {
+        for (list<pc_rule*>::iterator setptr = setToCheck.begin();setptr != setToCheck.end();setptr++) {
           if (*setptr == *ptr) {
             rulesMovedUp.push_back(*setptr);
             break;
@@ -1362,11 +1411,11 @@ void cuts::moveRulesUp(node* curr_node) {
 
   // remove duplicate rules from all children
   if (emptyIntersect) {
-    for(list<Rule*>::iterator setptr = rulesMovedUp.begin();setptr != rulesMovedUp.end();setptr++)
+    for(list<pc_rule*>::iterator setptr = rulesMovedUp.begin();setptr != rulesMovedUp.end();setptr++)
     {
     //setptr--;
     for (list <node*>::iterator item = (curr_node->children).begin();item != (curr_node->children).end();++item) {
-      for (list<Rule*>::iterator ptr = (*item)->classifier.begin();ptr != (*item)->classifier.end();ptr++) {
+      for (list<pc_rule*>::iterator ptr = (*item)->classifier.begin();ptr != (*item)->classifier.end();ptr++) {
         if (*setptr == *ptr) {
           ptr = (*item)->classifier.erase(ptr);
           break;
@@ -1381,7 +1430,8 @@ void cuts::moveRulesUp(node* curr_node) {
   //printf("Rules moved up: %d\n", rulesMovedUp.size());
 }
 
-int cuts::samerules(node * r1, node * r2) {
+int
+cuts::samerules(node * r1, node * r2) {
   if (r1->classifier.empty() || r2->classifier.empty()) {
     return 0;
   }
@@ -1390,9 +1440,9 @@ int cuts::samerules(node * r1, node * r2) {
   }
   int found = 0;
   int num = 0;
-  for (list<Rule*>::iterator itr1 = r1->classifier.begin();itr1 != r1->classifier.end();itr1++) {
+  for (list<pc_rule*>::iterator itr1 = r1->classifier.begin();itr1 != r1->classifier.end();itr1++) {
     found = 0;
-    for (list<Rule*>::iterator itr2 = r2->classifier.begin();itr2 != r2->classifier.end();itr2++) {
+    for (list<pc_rule*>::iterator itr2 = r2->classifier.begin();itr2 != r2->classifier.end();itr2++) {
       if ((**itr1).priority == (**itr2).priority) {
         found = 1;
         num++;
@@ -1409,88 +1459,121 @@ int cuts::samerules(node * r1, node * r2) {
   return 1;
 }
 
-list<node*> cuts::nodeMerging(node * curr_node) {
-	list<node*> newlist = curr_node->children;
-  int num = 0;
-  list<node*>::iterator itr2;
-/*	for(list<node*>::iterator junk = curr_node->children.begin(); junk != curr_node->children.end();junk++) {
-		remove_redund(junk++);
-	}*/
+list<node*>
+cuts::nodeMerging(node * curr_node) {
+// 	list<node*> newlist = curr_node->children;
+//   int num = 0;
+//   list<node*>::iterator itr2;
+// /*	for(list<node*>::iterator junk = curr_node->children.begin(); junk != curr_node->children.end();junk++) {
+// 		remove_redund(junk++);
+// 	}*/
 
-  for (list<node*>::iterator itr1 = newlist.begin(); itr1 != newlist.end(); itr1++) {
-    itr2 = itr1;
-    itr2++;
-    while(itr2 != newlist.end()) {
-      if (samerules(*itr1, *itr2)) {
-        num++;
-        //printf("samerules returned true\n");
-        for (int i = 0; i < MAXDIMENSIONS; i++) {
-          if ((**itr1).boundary.range[i][LowDim] > (**itr2).boundary.range[i][LowDim]) {
-            (**itr1).boundary.range[i][LowDim] = (**itr2).boundary.range[i][LowDim];
-          }
-          if ((**itr1).boundary.range[i][HighDim] < (**itr2).boundary.range[i][HighDim]) {
-            (**itr1).boundary.range[i][HighDim] = (**itr2).boundary.range[i][HighDim];
-          }
+//   for (list<node*>::iterator itr1 = newlist.begin(); itr1 != newlist.end(); itr1++) {
+//     itr2 = itr1;
+//     itr2++;
+//     while(itr2 != newlist.end()) {
+//       if (samerules(*itr1, *itr2)) {
+//         num++;
+//         //printf("samerules returned true\n");
+//         for (int i = 0; i < MAXDIMENSIONS; i++) {
+//           if ((*itr1)->boundary.field[i].low > (*itr2)->boundary.field[i].low) {
+//             (**itr1).boundary.field[i].low = (**itr2).boundary.field[i].low;
+//           }
+//           if ((*itr1)->boundary.field[i].high < (*itr2)->boundary.field[i].high) {
+//             (*itr1)->boundary.field[i].high = (*itr2)->boundary.field[i].high;
+//           }
+//         }
+//         ClearMem(*itr2);
+//         itr2 = newlist.erase(itr2);
+//       } else {
+//         itr2++;
+//       }
+//     }
+//   }
+//   if (num > curr_node->children.size()) {
+//     printf("Odd: Of %d children, %d were identical\n",newlist.size(),num);
+//   }
+//   return newlist;
+    list<node*> newlist = curr_node->children;
+    auto first_it = newlist.begin();
+
+    while (first_it != newlist.end()) {
+
+      auto second_it = first_it;
+      ++second_it;
+
+        while(second_it != newlist.end()) {
+          // Merge nodes that have the same rules
+            if (samerules(*first_it, *second_it)) {
+              // The merged node should have the tighter boundaries between the two
+                for (int i = 0; i < MAXDIMENSIONS; i++) {
+                    if ((*first_it)->boundary.field[i].low > (*second_it)->boundary.field[i].low) {
+                        (*first_it)->boundary.field[i].low = (*second_it)->boundary.field[i].low;
+                    }
+                    if ((*first_it)->boundary.field[i].high > (*second_it)->boundary.field[i].high) {
+                        (*first_it)->boundary.field[i].high = (*second_it)->boundary.field[i].high;
+                    }
+                }
+                // The second node was merged into the first, so delete it
+                delete(*second_it);
+                second_it = newlist.erase(second_it);
+            } else {
+                second_it++;
+            }
         }
-        ClearMem(*itr2);
-        itr2 = newlist.erase(itr2);
-      } else {
-        itr2++;
-      }
+        ++first_it;
     }
-  }
-  if (num > curr_node->children.size()) {
-    printf("Odd: Of %d children, %d were identical\n",newlist.size(),num);
-  }
-  return newlist;
+    return newlist;
 }
 
-void cuts::regionCompaction(node * curr_node) {
+void
+cuts::regionCompaction(node * curr_node) {
   list<unsigned long long> f0, f1, f2, f3, f4;
-  for (list<Rule*>::iterator itr = (curr_node->classifier).begin();itr != (curr_node->classifier).end();itr++) {
-    if ((**itr).range[0][LowDim] < curr_node->boundary.range[0][LowDim]) { f0.push_back(curr_node->boundary.range[0][LowDim]);}
-    else { f0.push_back((**itr).range[0][LowDim]);}
-    if ((**itr).range[0][HighDim] > curr_node->boundary.range[0][HighDim]) {f0.push_back(curr_node->boundary.range[0][HighDim]);}
-    else { f0.push_back((**itr).range[0][HighDim]);}
+  for (list<pc_rule*>::iterator itr = (curr_node->classifier).begin();itr != (curr_node->classifier).end();itr++) {
+    if ((**itr).field[0].low < curr_node->boundary.field[0].low) { f0.push_back(curr_node->boundary.field[0].low);}
+    else { f0.push_back((**itr).field[0].low);}
+    if ((**itr).field[0].high > curr_node->boundary.field[0].high) {f0.push_back(curr_node->boundary.field[0].high);}
+    else { f0.push_back((**itr).field[0].high);}
 
-    if ((**itr).range[1][LowDim] < curr_node->boundary.range[1][LowDim]) { f1.push_back(curr_node->boundary.range[1][LowDim]);}
-    else { f1.push_back((**itr).range[1][LowDim]);}
-    if ((**itr).range[1][HighDim] > curr_node->boundary.range[1][HighDim]) {f1.push_back(curr_node->boundary.range[1][HighDim]);}
-    else { f1.push_back((**itr).range[1][HighDim]);}
+    if ((**itr).field[1].low < curr_node->boundary.field[1].low) { f1.push_back(curr_node->boundary.field[1].low);}
+    else { f1.push_back((**itr).field[1].low);}
+    if ((**itr).field[1].high > curr_node->boundary.field[1].high) {f1.push_back(curr_node->boundary.field[1].high);}
+    else { f1.push_back((**itr).field[1].high);}
 
-    if ((**itr).range[2][LowDim] < curr_node->boundary.range[2][LowDim]) { f2.push_back(curr_node->boundary.range[2][LowDim]);}
-    else { f2.push_back((**itr).range[2][LowDim]);}
-    if ((**itr).range[2][HighDim] > curr_node->boundary.range[2][HighDim]) {f2.push_back(curr_node->boundary.range[2][HighDim]);}
-    else { f2.push_back((**itr).range[2][HighDim]);}
+    if ((**itr).field[2].low < curr_node->boundary.field[2].low) { f2.push_back(curr_node->boundary.field[2].low);}
+    else { f2.push_back((**itr).field[2].low);}
+    if ((**itr).field[2].high > curr_node->boundary.field[2].high) {f2.push_back(curr_node->boundary.field[2].high);}
+    else { f2.push_back((**itr).field[2].high);}
 
-    if ((**itr).range[3][LowDim] < curr_node->boundary.range[3][LowDim]) { f3.push_back(curr_node->boundary.range[3][LowDim]);}
-    else { f3.push_back((**itr).range[3][LowDim]);}
-    if ((**itr).range[3][HighDim] > curr_node->boundary.range[3][HighDim]) {f3.push_back(curr_node->boundary.range[3][HighDim]);}
-    else { f3.push_back((**itr).range[3][HighDim]);}
+    if ((**itr).field[3].low < curr_node->boundary.field[3].low) { f3.push_back(curr_node->boundary.field[3].low);}
+    else { f3.push_back((**itr).field[3].low);}
+    if ((**itr).field[3].high > curr_node->boundary.field[3].high) {f3.push_back(curr_node->boundary.field[3].high);}
+    else { f3.push_back((**itr).field[3].high);}
 
-    if ((**itr).range[4][LowDim] < curr_node->boundary.range[4][LowDim]) { f4.push_back(curr_node->boundary.range[4][LowDim]);}
-    else { f4.push_back((**itr).range[4][LowDim]);}
-    if ((**itr).range[4][HighDim] > curr_node->boundary.range[4][HighDim]) {f4.push_back(curr_node->boundary.range[4][HighDim]);}
-    else { f4.push_back((**itr).range[4][HighDim]);}
+    if ((**itr).field[4].low < curr_node->boundary.field[4].low) { f4.push_back(curr_node->boundary.field[4].low);}
+    else { f4.push_back((**itr).field[4].low);}
+    if ((**itr).field[4].high > curr_node->boundary.field[4].high) {f4.push_back(curr_node->boundary.field[4].high);}
+    else { f4.push_back((**itr).field[4].high);}
   }
   f0.sort();
   f1.sort();
   f2.sort();
   f3.sort();
   f4.sort();
-  curr_node->boundary.range[0][LowDim] = f0.front();
-  curr_node->boundary.range[0][HighDim] = f0.back();
-  curr_node->boundary.range[1][LowDim] = f1.front();
-  curr_node->boundary.range[1][HighDim] = f1.back();
-  curr_node->boundary.range[2][LowDim] = f2.front();
-  curr_node->boundary.range[2][HighDim] = f2.back();
-  curr_node->boundary.range[3][LowDim] = f3.front();
-  curr_node->boundary.range[3][HighDim] = f3.back();
-  curr_node->boundary.range[4][LowDim] = f4.front();
-  curr_node->boundary.range[4][HighDim] = f4.back();
+  curr_node->boundary.field[0].low = f0.front();
+  curr_node->boundary.field[0].high = f0.back();
+  curr_node->boundary.field[1].low = f1.front();
+  curr_node->boundary.field[1].high = f1.back();
+  curr_node->boundary.field[2].low = f2.front();
+  curr_node->boundary.field[2].high = f2.back();
+  curr_node->boundary.field[3].low = f3.front();
+  curr_node->boundary.field[3].high = f3.back();
+  curr_node->boundary.field[4].low = f4.front();
+  curr_node->boundary.field[4].high = f4.back();
 }
 
-void cuts::create_tree(list <Rule*> p_classifier)
+void
+cuts::create_tree(list <pc_rule*> p_classifier)
 {
 
   printf("Incoming No of Rules in this tree = %d\n",p_classifier.size());
@@ -1503,21 +1586,22 @@ void cuts::create_tree(list <Rule*> p_classifier)
   root = new node;
   root->depth = 1;
   for (int i = 0;i < MAXDIMENSIONS;++i) {
-	root->boundary.range[i][LowDim] = 0;
+    root->boundary.field[i].low = 0;
     if (i < 2)
-      root->boundary.range[i][HighDim] = 0xffffffff;
+      root->boundary.field[i].high = 0xffffffff;
     else if (i < 4)
-      root->boundary.range[i][HighDim] = 0xffff;
+      root->boundary.field[i].high = 0xffff;
     else
-      root->boundary.range[i][HighDim] = 0xff;
+      root->boundary.field[i].high = 0xff;
   }
   root->children.clear();
+  root->nextGen.clear();
   for (int i=0;i < MAXDIMENSIONS;i++)
     root->cuts[i] = 1;
 
-  for (auto i : p_classifier)
+  for (list <pc_rule*>::iterator i = p_classifier.begin();i != p_classifier.end();++i)
   {
-    root->classifier.push_back(i);
+    root->classifier.push_back((*i));
   }
 
   root->is_compressed = false;
@@ -1575,9 +1659,11 @@ void cuts::create_tree(list <Rule*> p_classifier)
 
       curr_node->is_compressed = NodeCompress(curr_node->children);
 
+      printf("ChildrenBefore: %d\n",curr_node->children.size());
+
       if (curr_node->children.size() > num_intervals)
       {
-        // printf("Before: %d\n",curr_node->children.size());
+//         printf("Before: %d\n",curr_node->children.size());
         // clear the current children
         for (list <node*>::iterator item = curr_node->children.begin();
             item != curr_node->children.end();++item)
@@ -1607,6 +1693,7 @@ void cuts::create_tree(list <Rule*> p_classifier)
           ClearMem(*item);
         }
       }
+      printf("ChildrenAfter: %d\n",curr_node->children.size());
 
       Backup.clear();
     }
@@ -1618,6 +1705,13 @@ void cuts::create_tree(list <Rule*> p_classifier)
 
     // HEURISTIC 1 - create a list of nodes that should actually exist - both leaf and non-leaf
     list<node*> topush = nodeMerging(curr_node);
+    nextGenlist.clear();
+    nextGenlist = topush;
+    curr_node->nextGen.clear();
+    for (auto ng : nextGenlist){
+    	curr_node->nextGen.push_back(ng);
+    }
+//    curr_node->nextGen.insert(curr_node->nextGen.end(), topush.begin(), topush.end());
 
     // HEURISTIC 2
     for (list <node*>::iterator item = topush.begin();item != topush.end();++item)
@@ -1631,11 +1725,11 @@ void cuts::create_tree(list <Rule*> p_classifier)
 
       if ((*item)->classifier.size() > bucketSize)
       {
-        if ((*item)->boundary.range[0][LowDim] == curr_node->boundary.range[0][LowDim] && (*item)->boundary.range[0][HighDim] == curr_node->boundary.range[0][HighDim] &&
-            (*item)->boundary.range[1][LowDim] == curr_node->boundary.range[1][LowDim] && (*item)->boundary.range[1][HighDim] == curr_node->boundary.range[1][HighDim] &&
-            (*item)->boundary.range[2][LowDim] == curr_node->boundary.range[2][LowDim] && (*item)->boundary.range[2][HighDim] == curr_node->boundary.range[2][HighDim] &&
-            (*item)->boundary.range[3][LowDim] == curr_node->boundary.range[3][LowDim] && (*item)->boundary.range[3][HighDim] == curr_node->boundary.range[3][HighDim] &&
-            (*item)->boundary.range[4][LowDim] == curr_node->boundary.range[4][LowDim] && (*item)->boundary.range[4][HighDim] == curr_node->boundary.range[4][HighDim] &&
+        if ((*item)->boundary.field[0].low == curr_node->boundary.field[0].low && (*item)->boundary.field[0].high == curr_node->boundary.field[0].high &&
+            (*item)->boundary.field[1].low == curr_node->boundary.field[1].low && (*item)->boundary.field[1].high == curr_node->boundary.field[1].high &&
+            (*item)->boundary.field[2].low == curr_node->boundary.field[2].low && (*item)->boundary.field[2].high == curr_node->boundary.field[2].high &&
+            (*item)->boundary.field[3].low == curr_node->boundary.field[3].low && (*item)->boundary.field[3].high == curr_node->boundary.field[3].high &&
+            (*item)->boundary.field[4].low == curr_node->boundary.field[4].low && (*item)->boundary.field[4].high == curr_node->boundary.field[4].high &&
             (*item)->classifier.size() == curr_node->classifier.size())
         {
           printf("Warning: parent and child are identical with %d rules!\n",curr_node->classifier.size());
@@ -1674,17 +1768,124 @@ void cuts::create_tree(list <Rule*> p_classifier)
 
 }
 
-void cuts::binRules() {
+void
+cuts::IP2Range(unsigned ip1,unsigned ip2,unsigned ip3,unsigned ip4,unsigned iplen,pc_rule *rule,int index)
+{
+  unsigned tmp;
+  unsigned Lo,Hi;
+
+  if(iplen == 0){
+    Lo = 0;
+    Hi = 0xFFFFFFFF;
+  }else if(iplen > 0 && iplen <= 8) {
+    tmp = ip1 << 24;
+    Lo = tmp;
+    Hi = Lo + (1<<(32-iplen)) - 1;
+  }else if(iplen > 8 && iplen <= 16){
+    tmp =  ip1 << 24;
+    tmp += ip2 << 16;
+    Lo = tmp;
+    Hi = Lo + (1<<(32-iplen)) - 1;
+  }else if(iplen > 16 && iplen <= 24){
+    tmp = ip1 << 24;
+    tmp += ip2 << 16;
+    tmp += ip3 << 8;
+    Lo = tmp;
+    Hi = Lo + (1<<(32-iplen)) - 1;
+  }else if(iplen > 24 && iplen <= 32){
+    tmp = ip1 << 24;
+    tmp += ip2 << 16;
+    tmp += ip3 << 8;
+    tmp += ip4;
+    Lo = tmp;
+    Hi = Lo + (1<<(32-iplen)) - 1;
+  }else{
+    printf("Error: Src IP length exceeds 32\n");
+    exit(1);
+  }
+
+  rule->field[index].low  = Lo;
+  rule->field[index].high = Hi;
+
+  if (CheckIPBounds(rule->field[index]))
+  {
+    printf("Error: IP2Range bounds check for %d failed\n",index);
+    exit(1);
+  }
+  //printf("\t Prefix: %u.%u.%u.%u/%u\n",ip1,ip2,ip3,ip4,iplen);
+  //printf("\t Range : %llu : %llu\n",rule->field[index].low,rule->field[index].high);
+
+}
+
+int
+cuts::loadrule(FILE *fp) {
+  int i = 0;
+  int wild = 0;
+  unsigned sip1, sip2, sip3, sip4, siplen;
+  unsigned dip1, dip2, dip3, dip4, diplen;
+  unsigned proto, protomask;
+  unsigned junk, junkmask;
+
+  pc_rule rule;
+
+  while(1) {
+    wild = 0;
+    if(fscanf(fp,"@%u.%u.%u.%u/%u\t%u.%u.%u.%u/%u\t%llu : %llu\t%llu : %llu\t%x/%x\t%x/%x\n",
+          &sip1, &sip2, &sip3, &sip4, &siplen, &dip1, &dip2, &dip3, &dip4, &diplen,
+          &rule.field[2].low, &rule.field[2].high, &rule.field[3].low, &rule.field[3].high,
+          &proto, &protomask, &junk, &junkmask) != 18) break;
+    rule.siplen = siplen;
+    rule.diplen = diplen;
+    rule.sip[0] = sip1;
+    rule.sip[1] = sip2;
+    rule.sip[2] = sip3;
+    rule.sip[3] = sip4;
+    rule.dip[0] = dip1;
+    rule.dip[1] = dip2;
+    rule.dip[2] = dip3;
+    rule.dip[3] = dip4;
+
+    IP2Range(sip1,sip2,sip3,sip4,siplen,&rule,0);
+    IP2Range(dip1,dip2,dip3,dip4,diplen,&rule,1);
+
+    if(protomask == 0xFF){
+      rule.field[4].low = proto;
+      rule.field[4].high = proto;
+    }else if(protomask == 0){
+      rule.field[4].low = 0;
+      rule.field[4].high = 0xFF;
+      wild++;
+    }else{
+      printf("Protocol mask error\n");
+      return 0;
+    }
+    rule.priority = i;
+    if ((rule.field[2].low == 0) && (rule.field[2].high == 65535)) {
+      wild++;
+    }
+    if ((rule.field[3].low == 0) && (rule.field[3].high == 65535)) {
+      wild++;
+    }
+    if (wild != 5) {
+      classifier.push_back(rule);
+    }
+    i++;
+  }
+  return i;
+}
+
+void
+cuts::binRules() {
   int min, wild;
   int secondmin, thirdmin;
   double field[5];
-  for (list<Rule>::iterator itr = classifier.begin(); itr != classifier.end(); itr++) {
+  for (list<pc_rule>::iterator itr = classifier.begin(); itr != classifier.end(); itr++) {
     wild = 0;
-    field[0] = ((double) ((*itr).range[0][HighDim] - (*itr).range[0][LowDim]))/0xFFFFFFFF;
-    field[1] = ((double) ((*itr).range[1][HighDim] - (*itr).range[1][LowDim]))/0xFFFFFFFF;
-    field[2] = ((double) ((*itr).range[2][HighDim] - (*itr).range[2][LowDim]))/65535;
-    field[3] = ((double) ((*itr).range[3][HighDim] - (*itr).range[3][LowDim]))/65535;
-    if (((*itr).range[4][LowDim] == 0) && ((*itr).range[4][HighDim] == 0xFF)) {
+    field[0] = ((double) ((*itr).field[0].high - (*itr).field[0].low))/0xFFFFFFFF;
+    field[1] = ((double) ((*itr).field[1].high - (*itr).field[1].low))/0xFFFFFFFF;
+    field[2] = ((double) ((*itr).field[2].high - (*itr).field[2].low))/65535;
+    field[3] = ((double) ((*itr).field[3].high - (*itr).field[3].low))/65535;
+    if (((*itr).field[4].low == 0) && ((*itr).field[4].high == 0xFF)) {
       field[4] = 1;
       wild++;
     } else {
@@ -1830,7 +2031,8 @@ void cuts::binRules() {
  *  Method to merge trees together
  *  Will try to merge trees that have no more than one field that is not overlapping (i.e. where one tree is WC and one tree is not)
  */
-void cuts::MergeTrees() {
+void
+cuts::MergeTrees() {
   printf("Number of trees before merge: %d\n",numTrees);
   int merged[26]; // array - if the value is 0 than that try is not merged, if it is 1 it has been and is NOT a candidate for merging anymore!
   for (int i = 0; i < 26; i++) { merged[i] = 0; } // make sure array is initialized to 0
@@ -2146,8 +2348,21 @@ void cuts::MergeTrees() {
   printf("Number of trees after merge: %d\n",numTrees);
 }
 
+void
+cuts::LoadRulePtr(list <pc_rule> &rule_list,list <pc_rule*> &ruleptr_list,int start,int end)
+{
+  printf("Rule:%d - %d\n",start,end);
+  int count = 0;
+  for (list <pc_rule>::iterator i = rule_list.begin();i != rule_list.end();++i)
+  {
+    if (count >= start && count <= end)
+      ruleptr_list.push_back(&(*i));
+    count++;
+  }
+}
 
-void cuts::BinPack(int bins,list <TreeStat*> Statistics)
+void
+cuts::BinPack(int bins,list <TreeStat*> Statistics)
 {
   list <MemBin*> Memory;
   for (int i = 0;i < bins;i++)
@@ -2203,7 +2418,8 @@ void cuts::BinPack(int bins,list <TreeStat*> Statistics)
 
 }
 
-int cuts::ComputeCutoffs()
+int
+cuts::ComputeCutoffs()
 {
   if (binningON == 0)
   {
@@ -2220,165 +2436,359 @@ int cuts::ComputeCutoffs()
   return 0;
 }
 
+int
+cuts::BuildClassifier(){
+  int i,j;
+  int header[MAXDIMENSIONS];
+  int matchid, fid;
+  char *s = (char *)calloc(200, sizeof(char));
 
-cuts::cuts(){
+//  parseargs(argc, argv);
 
-}
+  while(fgets(s, 200, fpr) != NULL)numrules++;
+  rewind(fpr);
 
-cuts::~cuts(){
 
-}
+  printf("number of rules read from file = %d\n", numrules);
 
-void cuts::LoadRulePtr(list<Rule> ruleset,list <Rule*> ruleptr_list,int start,int end)
-{
-  printf("Rule:%d - %d\n",start,end);
-  int count = 0;
-  for (auto i : ruleset)
+  classifier.clear();
+  int numrules1 = loadrule(fpr);
+
+  if (numrules1 != numrules)
   {
-    if (count >= start && count <= end)
-      ruleptr_list.push_back(&i);
-    count++;
+    printf("Error: Number of rules read != Number of rules loaded!\n");
+    exit(1);
   }
+  fclose(fpr);
+
+//  printf("doing done!");
+  ComputeCutoffs();
+//  printf("cutoffs done!");
+
+  if (binningON == 1)
+  {
+    binRules();
+//    printf("binning done!");
+    if (mergingON == 1)
+      MergeTrees();
+//    printf("merging done!");
+
+    for (int i = 0; i < 5; i++) {
+      if (!(bigrules[i].empty())) {
+        InitStats(bigrules[i].size());
+        create_tree(bigrules[i]);
+        TreeDetails details;
+        details.root = root;
+        efficuts_trees.push_back(details);
+        RecordTreeStats();
+        bigrules[i].clear();
+      }
+    }
+    for (int j = 0; j < 10; j++) {
+      if (!(kindabigrules[j].empty())) {
+        InitStats(kindabigrules[j].size());
+        create_tree(kindabigrules[j]);
+        TreeDetails details;
+        details.root = root;
+        efficuts_trees.push_back(details);
+        RecordTreeStats();
+        kindabigrules[j].clear();
+      }
+    }
+    for (int k = 0; k < 10; k++) {
+      if (!(mediumrules[k].empty())) {
+        InitStats(mediumrules[k].size());
+        create_tree(mediumrules[k]);
+        TreeDetails details;
+        details.root = root;
+        efficuts_trees.push_back(details);
+        RecordTreeStats();
+        mediumrules[k].clear();
+      }
+    }
+    for (int l = 0; l < 5; l++) {
+      if (!(littlerules[l].empty())) {
+        InitStats(littlerules[l].size());
+        create_tree(littlerules[l]);
+        TreeDetails details;
+        details.root = root;
+        efficuts_trees.push_back(details);
+        RecordTreeStats();
+        mediumrules[l].clear();
+      }
+    }
+    if (!(smallrules.empty())) {
+      InitStats(smallrules.size());
+      create_tree(smallrules);
+      TreeDetails details;
+      details.root = root;
+      efficuts_trees.push_back(details);
+      RecordTreeStats();
+      smallrules.clear();
+    }
+  /*else
+  {
+    LoadRulePtr(classifier,p_classifier);
+    InitStats(p_classifier.size());
+    create_tree(p_classifier);
+    RecordTreeStats();
+    p_classifier.clear();
+  }*/
+  }
+  else
+  {
+
+    int start = 0;
+    int end = 0;
+    for (int i = 0;i < Num_Junk;i++)
+    {
+      if (i == Num_Junk - 1)
+        end = classifier.size() - 1;
+      else
+        end = start + Cutoffs[i] - 1;
+      LoadRulePtr(classifier,p_classifier,start,end);
+      start = end + 1;
+      InitStats(p_classifier.size());
+      create_tree(p_classifier);
+      TreeDetails details;
+      details.root = root;
+      efficuts_trees.push_back(details);
+      RecordTreeStats();
+      p_classifier.clear();
+    }
+
+  }
+
+  // Statistics
+  PrintStats();
+
+   _trees = efficuts_trees;
+
+//  BinPack(1,Statistics);
+//  BinPack(2,Statistics);
+//  BinPack(3,Statistics);
+//  BinPack(4,Statistics);
+  return 0;
+}
+
+bool inline
+cuts::MatchesPacket(const Packet& p, pc_rule * r) {
+	if (r!=NULL){
+		totalNodesTraversed++;
+		for (int i = 0; i < MAXDIMENSIONS; i++) {
+			if (p[i] < r->field[i].low || p[i] > r->field[i].high) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	return false;
+}
+
+bool inline
+cuts::IntersectsRule(pc_rule *r1, pc_rule *r2) {
+	for (int i = 0; i < MAXDIMENSIONS; i++) {
+		if (r1->field[i].high < r2->field[i].low|| r1->field[i].low > r2->field[i].high) return false;
+	}
+	return true;
 }
 
 int
-cuts::loadrule(const vector<Rule>& ruleset) {
-  int i = 0;
-  int wild = 0;
+cuts::AccessList(list<pc_rule*> &roots, const Packet& p){
 
-  for (auto r: ruleset){
-	  wild = 0;
+	if (!roots.empty()){
+		std::cout << roots.size() << std::endl;
+	for (auto iter : roots){
+//		for(list<Rule*>::iterator iter = roots.begin(); iter != roots.end(); iter++)
+		totalNodesTraversed++;
+		if (MatchesPacket(p,iter)){
+			return iter->priority;
+		}
+	}
+	}
 
-// std::cout << r.prefix_length[4] << std::endl;
-    if(r.prefix_length[4] == 32){
-    	r.prefix_length[4] = 0xFF;
-//      rule.field[4].low = proto; // already set in InputReader::ReadFilter
-//      rule.field[4].high = proto; // already set in InputReader::ReadFilter
-    }else if(r.prefix_length[4] == 24){
-    	r.prefix_length[4] = 0;
-    	r.range[4][LowDim]= 0;
-    	r.range[4][HighDim] = 0xFF;
-      // std::cout << r.prefix_length[4] << std::endl;
-    	wild++;
-    }else{
-      printf("Protocol mask error\n");
-      return 0;
+	return -1;
+}
+
+
+//node*
+//cuts::AccessTree(node* item, const Packet& p){
+//
+//	totalNodesTraversed++;
+//
+////	node* next =NULL ;
+//
+//
+//	if (!MatchesPacket(p,&(item->boundary))){
+//		std::cout << "did not match root boundary" << std::endl;
+//		return NULL;
+//	}
+//	else if (item->nextGen.empty())
+//    {
+//    	std::cout << "nextGen empty" << std::endl;
+//        /* Check the list of rules now, since there are no more children */
+//    	if (!item->classifier.empty()){
+//    	int found = AccessList(item->classifier, p);
+//    	if (found)
+//    		return item;
+//    	else{
+//    		return NULL;
+//    	}
+//    	}
+//    	else
+//    		return NULL;
+//    }
+//    else
+//    {
+//    	std::cout << "nextGen not empty size = ";
+//    	std::cout << int(item->nextGen.size()) << std::endl;
+//        for (auto it : item->nextGen)
+////    	for(list<node*>::iterator it = item->nextGen.begin(); it != item->nextGen.end(); it++)
+//        {
+//    		std::cout << "arrived inside for loop" << std::endl;
+//        	totalNodesTraversed++;
+////
+////        	(&(*it)->boundary)->Print();
+////        	std::cout << it << std::endl;
+////        	if (it==NULL)
+////        		std::cout << "Damn" << std::endl;
+//
+//            if ( MatchesPacket(p,&(it->boundary)))
+//            {
+//            	std::cout << "matched a nextGen boundary" << std::endl;
+////            	next = it;
+////            	break;
+////            	return it;
+//            	node* found = AccessTree(it, p);
+//            	if (found!=NULL)
+//            		return found;
+//            }
+//        }
+////        return next;
+//    }
+//
+//    return NULL;
+//}
+
+int
+cuts::AccessTree(node* item, const Packet& p){
+
+
+	bool found = false;
+	found = MatchesPacket(p,&(item->boundary));
+	if (!found){
+		return 0;
+	}
+	else if (item->children.empty()){
+		found = AccessList(item->classifier, p);
+		if (found){
+			accessFound = true;
+			return 1;
+		}
+	}
+	else{
+
+		for (auto iter : item->children){
+			if (MatchesPacket(p,&(iter->boundary))){
+				found = AccessTree(iter,p);
+				if (found){
+					return 1;
+				}
+			}
+		}
+
+	}
+	return 0;
+
+//	    if (item->children.empty())
+//	    {
+//	        // Check list
+//	        return AccessList(item->classifier, p);
+////	        if(ans){
+////	        	return item;
+////	        }
+////	        else{
+////	        	return NULL;
+////	        }
+//	    }
+//	    else
+//	    {
+//	        // Check children
+//
+////	        node* found=NULL;
+//	        int color = -1;
+//
+//	        for (list<node*>::iterator iter = item->children.begin();
+//	                iter != item->children.end(); iter++)
+//	        {
+//	        	std::cout << item->children.size() << " " << item->nextGen.size() << std::endl;
+//	            if (MatchesPacket(p,&(*iter)->boundary))
+//	            {
+////	                found = AccessTree(*iter, p);
+////	                if (found!=NULL)
+////	                    break;
+//	            	int c = AccessTree(*iter, p);
+//	            	if (color < 0 || (c < color && c >= 0))
+//	            		color = c;
+//	            }
+//	        }
+//
+////	        return found;
+//	        return color;
+//	    }
+//
+//	    // No match
+//	    return -1;
+}
+
+int
+cuts::AccessTrees(const Packet& p){
+
+//	node* found = NULL;
+//    for (auto item: roots){
+//    	found = AccessTree(item, p);
+//    	if (found!=NULL){
+//    		break;
+//    	}
+//    }
+//    if (found==NULL){
+//    	std::cout << "did not find rule" << std::endl;
+//    }
+//
+//    return 0;
+    for (list<TreeDetails>::iterator iter = _trees.begin(); iter != _trees.end(); iter++)
+    {
+        AccessTree(iter->root, p);
+        //cout << "Found color: " << c << endl;
+        if (accessFound){
+        	return 0;
+        }
     }
 
-    r.priority=i; // InputReader::ReadFilter already sets a priority but in the decreasing order. Changing it back to increasing order here.
+    return 0;
+}
 
-    if ((r.range[2][LowDim] == 0) && (r.range[2][HighDim] == 65535)) {
-      wild++;
-    }
-    if ((r.range[3][LowDim] == 0) && (r.range[3][HighDim] == 65535)) {
-      wild++;
-    }
-    if (wild != 5) {
-  	  classifier.push_back(r);
-    }
-    i++;
-  }
-  return i;
+
+unsigned int
+cuts::AccessRule(const Packet& p){
+
+	int nodesTraversedSofar = totalNodesTraversed;
+
+	accessFound=false;
+	AccessTrees(p);
+
+	if (!accessFound){
+		std::cout << "rule not found " << std::endl;
+	}
+
+	totalAccess+=1;
+
+	return (totalNodesTraversed - nodesTraversedSofar);
 }
 
 int
 cuts::CreateClassifier(const vector <Rule>& ruleset){
-
-	time_point<steady_clock> start, end;
-	duration<double,std::milli> elapsed_milliseconds;
-	start = steady_clock::now();
-
-	classifier.clear();
-	numrules = ruleset.size();
-
-	printf("number of rules read from file = %d\n", numrules);
-
-	int numrules1 = loadrule(ruleset);
-
-	if (numrules1 != numrules){
-		printf("Error: Number of rules read != Number of rules loaded!\n");
-		exit(1);
-	}
-
-	ComputeCutoffs();
-
-	if (binningON == 1){
-	    binRules();
-	    if (mergingON == 1)
-	      MergeTrees();
-
-	    for (int i = 0; i < 5; i++) {
-	      if (!(bigrules[i].empty())) {
-	        InitStats(bigrules[i].size());
-	        create_tree(bigrules[i]);
-	        RecordTreeStats();
-	        bigrules[i].clear();
-	      }
-	    }
-	    for (int j = 0; j < 10; j++) {
-	      if (!(kindabigrules[j].empty())) {
-	        InitStats(kindabigrules[j].size());
-	        create_tree(kindabigrules[j]);
-	        RecordTreeStats();
-	        kindabigrules[j].clear();
-	      }
-	    }
-	    for (int k = 0; k < 10; k++) {
-	      if (!(mediumrules[k].empty())) {
-	        InitStats(mediumrules[k].size());
-	        create_tree(mediumrules[k]);
-	        RecordTreeStats();
-	        mediumrules[k].clear();
-	      }
-	    }
-	    for (int l = 0; l < 5; l++) {
-	      if (!(littlerules[l].empty())) {
-	        InitStats(littlerules[l].size());
-	        create_tree(littlerules[l]);
-	        RecordTreeStats();
-	        mediumrules[l].clear();
-	      }
-	    }
-	    if (!(smallrules.empty())) {
-	      InitStats(smallrules.size());
-	      create_tree(smallrules);
-	      RecordTreeStats();
-	      smallrules.clear();
-	    }
-	  /*else
-	  {
-	    LoadRulePtr(classifier,p_classifier);
-	    InitStats(p_classifier.size());
-	    create_tree(p_classifier);
-	    RecordTreeStats();
-	    p_classifier.clear();
-	  }*/
-	}
-	else{
-	    int start = 0;
-	    int end = 0;
-	    for (int i = 0;i < Num_Junk;i++)
-	    {
-	      if (i == Num_Junk - 1)
-	        end = classifier.size() - 1;
-	      else
-	        end = start + Cutoffs[i] - 1;
-	      LoadRulePtr(classifier,p_classifier,start,end);
-	      start = end + 1;
-	      InitStats(p_classifier.size());
-	      create_tree(p_classifier);
-	      RecordTreeStats();
-	      p_classifier.clear();
-	    }
-	}
-
-	PrintStats();
-
-	end = steady_clock::now();
-
-	elapsed_milliseconds = end - start;
-
-	this->initDelay = elapsed_milliseconds.count();
 
 	return 0;
 }
@@ -2395,11 +2805,6 @@ cuts::DeleteRule(const Rule& r){
 	return 0;
 }
 
-unsigned int
-cuts::AccessRule(const Packet& p){
-
-	return 0;
-}
 
 unsigned int
 cuts::GetNumRules() const{
@@ -2420,4 +2825,3 @@ cuts::GetInitDelay() const{
 
 
 }
-

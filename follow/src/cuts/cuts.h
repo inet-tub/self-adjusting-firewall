@@ -1,20 +1,12 @@
 /*
  * cuts.h
  *
- *  Created on: Jul 16, 2021
+ *  Created on: Jul 19, 2021
  *      Author: vamsi
  */
 
-// Copyright to be added later
-// Originally from Efficuts authors. Majority of the code in this file is from the original implementation.
-// Modified by Vamsi
-
-#ifndef EFFICUTS_EFFICUTS_H_
-#define EFFICUTS_EFFICUTS_H_
-
-#include "./../includes/external_includes.h"
-#include "./../classifier/baseclassifier.h"
-#include "./../cmd/CommandLine.h"
+#ifndef CUTS_CUTS_H_
+#define CUTS_CUTS_H_
 
 #define MAXDIMENSIONS 5
 #define MAX_ALLOWED_LEVELS 200
@@ -33,6 +25,20 @@
 
 #define NUM_JUNK 5
 
+# include "./../classifier/baseclassifier.h"
+#include "./../cmd/CommandLine.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <list>
+#include <map>
+#include <iostream>
+#include <algorithm>
+#include <sstream>
+#include <cmath>
+
+using namespace std;
+
 namespace simulator{
 
 struct range{
@@ -40,15 +46,22 @@ struct range{
   unsigned long long high;
 };
 
+struct pc_rule{
+  int priority;
+  struct range field[MAXDIMENSIONS];
+  int siplen, diplen;
+  unsigned sip[4], dip[4];
+};
 
 struct node
 {
   int depth;
   int problematic;
   int node_has_rule;
-  Rule boundary;
-  list <Rule*> classifier;
+  pc_rule boundary;
+  list <pc_rule*> classifier;
   list <node *> children;
+  list <node *> nextGen;
   int cuts[MAXDIMENSIONS];
   // this is used only if this node is a result
   // of cutting in 2D
@@ -89,6 +102,14 @@ struct TreeStat
   unsigned long long total_memory_in_KB;
 };
 
+struct TreeDetails {
+	node* root;
+	std::vector<bool> wideFields;
+	TreeDetails() : root(nullptr) {
+		wideFields.resize(MAXDIMENSIONS);
+	}
+};
+
 struct MemBin
 {
   int Max_Depth;
@@ -101,8 +122,9 @@ class cuts : public BaseClassifier {
 
 public:
 	cuts();
-
 	virtual ~cuts();
+
+    int BuildClassifier();
 
     int CreateClassifier(const vector<Rule>& ruleset);
 
@@ -129,9 +151,11 @@ public:
 
     void parseargs(CommandLine* cmd);
 
-    int loadrule(const vector<Rule>& ruleset);
+    int loadrule(FILE *fp);
 
-    void LoadRulePtr(list<Rule> ruleset,list <Rule*> ruleptr_list,int start,int end);
+    void IP2Range(unsigned ip1,unsigned ip2,unsigned ip3,unsigned ip4,unsigned iplen,pc_rule *rule,int index);
+
+    void LoadRulePtr(list <pc_rule> &rule_list,list <pc_rule*> &ruleptr_list,int start,int end);
 
 //    bool mycomparison(Rule* first,Rule* second);
 
@@ -151,13 +175,13 @@ public:
 
     bool IsPowerOfTwo(int x);
 
-    Rule get_bound(node *curr_node,int *offset);
+    pc_rule get_bound(node *curr_node,int *offset);
 
-    bool is_present(Rule boundary,Rule *rule);
+    bool is_present(pc_rule boundary,pc_rule *rule);
 
-    void modifyrule(Rule boundary,Rule *rule);
+    void modifyrule(pc_rule boundary,pc_rule *rule);
 
-    bool is_equal(Rule rule1,Rule rule2, Rule boundary);
+    bool is_equal(pc_rule rule1,pc_rule rule2, pc_rule boundary);
 
     void remove_redund(node *curr_node);
 
@@ -203,7 +227,7 @@ public:
 
     void regionCompaction(node * curr_node);
 
-    void create_tree(list <Rule*> p_classifier);
+    void create_tree(list <pc_rule*> p_classifier);
 
     void binRules();
 
@@ -213,17 +237,27 @@ public:
 
     int ComputeCutoffs();
 
-public:
+    static bool mymemsort(MemBin* first,MemBin* second);
 
-    std::vector<Rule> rules;
+    static bool mystatsort(TreeStat* first,TreeStat* second);
+
+    static bool mycomparison(pc_rule* first,pc_rule* second);
+
+    static bool myequal(pc_rule* first,pc_rule* second);
+
+    int AccessTrees(const Packet& p);
+
+    int AccessTree(node* item, const Packet& p);
+
+    int AccessList(list<pc_rule*> &roots, const Packet& p);
+
+    bool inline MatchesPacket(const Packet& p, pc_rule * r) ;
+
+    bool inline IntersectsRule(pc_rule *r1, pc_rule *r2);
 
 private:
-    struct listNode* head = NULL;
-    struct listNode* tail = NULL;
     uint64_t totalNodesTraversed=0; // May overflow
     uint64_t totalAccess=0;
-
-
     int Num_Junk;
 
     unsigned long long Percents[NUM_JUNK] =
@@ -253,19 +287,19 @@ private:
     int numTrees = 0;
 
     // tree related
-    list <Rule> classifier;
-    //list <pc_rule*> p_classifier;
-    list <Rule*> p_classifier;
+    list <pc_rule> classifier;
+    list <pc_rule*> p_classifier;
     int numrules=0;
     node *root;
     list <node*> childlist;
+    list <node*> nextGenlist;
 
     int rulelists[31];
-    list<Rule*> bigrules[5];
-    list<Rule*> kindabigrules[10];
-    list<Rule*> mediumrules[10];
-    list<Rule*> littlerules[5];
-    list<Rule*> smallrules;
+    list<pc_rule*> bigrules[5];
+    list<pc_rule*> kindabigrules[10];
+    list<pc_rule*> mediumrules[10];
+    list<pc_rule*> littlerules[5];
+    list<pc_rule*> smallrules;
 
     int Num_Partitions;
     int Avg_Degree;
@@ -292,10 +326,19 @@ private:
     int treecount = 0;
     TreeStat* p_record;
     list <TreeStat*> Statistics;
+    list<TreeDetails> efficuts_trees;
+    list<TreeDetails> _trees;
 
+    list<node* > allRoots;
+
+    bool accessFound = false;
+	
 };
+
+
 
 } /* namespace simulator */
 
 
-#endif /* EFFICUTS_EFFICUTS_H_ */
+
+#endif /* CUTS_CUTS_H_ */
