@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jul 20 09:20:51 2021
-
 @author: vamsi
 """
 
@@ -104,6 +103,8 @@ def checkOverlap(rule1, rule2):
     else:
         return False
 
+
+
 print("start building G")
 G = nx.DiGraph()
 for i in range(prio):
@@ -112,16 +113,12 @@ for i in range(prio):
 
     G.add_node(i)
 
-for i in range(prio):
-    # p = prio-1-i
-    p=i
     for j in range(i):
         rule1 = [srcIP[j],dstIP[j],srcPort[j],dstPort[j],protocol[j],priority[j]]
         rule2 = [srcIP[i],dstIP[i],srcPort[i],dstPort[i],protocol[i],priority[i]]
         if checkOverlap(rule1,rule2):
             G.add_edge(i,j)
 #%%
-print(G.degree())
 
 
 print("Start computing the longest path / depth")
