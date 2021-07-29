@@ -18,6 +18,8 @@ import sys
 
 # ruleset = "./../../classbench/db_generator/MyFilters10k"
 ruleset = sys.argv[1]
+outputfile = sys.argv[2]
+nest_value = sys.argv[3]
 
 srcIP=list()
 dstIP=list()
@@ -42,7 +44,7 @@ with open(ruleset, "r") as file:
         ipLow = ip
         ipHigh = ipLow + (1<< (32-ipLen)) - 1
         srcIP.append((ipLow,ipHigh))
-        
+
         # DST IP
         ipSplit = tuples[1].split('/')
         ipLen = int(ipSplit[1])
@@ -55,15 +57,15 @@ with open(ruleset, "r") as file:
         ipLow = ip
         ipHigh = ipLow + (1<< (32-ipLen)) - 1
         dstIP.append((ipLow,ipHigh))
-        
+
         # SRC Port
         portSplit = tuples[2].split(':')
         srcPort.append((int(portSplit[0]),int(portSplit[1])))
-        
+
         # DST Port
         portSplit = tuples[3].split(':')
         dstPort.append((int(portSplit[0]),int(portSplit[1])))
-        
+
         # PROTOCOL
         protocolSplit = tuples[4].split('/')
         protoMask = protocolSplit[1]
@@ -75,7 +77,7 @@ with open(ruleset, "r") as file:
         else:
             print("Invalid protocol filed encountered in classbench ruleset! Exiting")
             exit
-            
+
         # PRIORITY
         priority.append(prio)
         prio+=1
@@ -90,8 +92,8 @@ rules["priority"]=priority
 
 print("NumRules %d"%prio)
 
-#%%    
-
+# #%%
+#
 # This is directional. Check whether rule1 is a dependency of rule 2 or not.
 def checkOverlap(rule1, rule2):
     for i in range(5):
@@ -102,20 +104,41 @@ def checkOverlap(rule1, rule2):
     else:
         return False
 
+<<<<<<< HEAD
+=======
+
+
+print("start building G")
+>>>>>>> 0f204c33d56872046fef3f3e17ef41abbafdaa37
 G = nx.DiGraph()
 for i in range(prio):
+    if i % 500 == 0:
+        print(i)
+
     G.add_node(i)
 
+<<<<<<< HEAD
 for i in range(prio):
     # p = prio-1-i
     p=i
     for j in range(prio):
+=======
+    for j in range(i):
+>>>>>>> 0f204c33d56872046fef3f3e17ef41abbafdaa37
         rule1 = [srcIP[j],dstIP[j],srcPort[j],dstPort[j],protocol[j],priority[j]]
-        rule2 = [srcIP[p],dstIP[p],srcPort[p],dstPort[p],protocol[p],priority[p]]
-        if checkOverlap(rule1,rule2)==True:
-            G.add_edge(p,j)
+        rule2 = [srcIP[i],dstIP[i],srcPort[i],dstPort[i],protocol[i],priority[i]]
+        if checkOverlap(rule1,rule2):
+            G.add_edge(i,j)
 #%%
 print(G.degree())
 
+
+print("Start computing the longest path / depth")
 depth=nx.dag_longest_path(G)
 print("Depth %d"%len(depth))
+
+with open(outputfile, "w") as file:
+    file.write(f"{ruleset};{prio};{nest_value};{len(depth)};\n")
+
+ruleset = sys.argv[1]
+outputfile = sys.argv[2]
