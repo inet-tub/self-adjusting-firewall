@@ -565,12 +565,12 @@ int remove_redundant_filters(int num_filters, FilterList* filters, filter* temp_
     else ftuple->flag = 0;
     // Get pointer for tuple list
     TupleListPtr = TupleTree->Insert(ftuple);
-    if (TupleListPtr == Null) {fprintf(stderr,"ERROR: TupleBST::Insert returned a null pointer."); exit(1);}
+    if (TupleListPtr == NULL) {fprintf(stderr,"ERROR: TupleBST::Insert returned a null pointer."); exit(1);}
 
     // Check for redundant filters in tuple list
     dlist_item* findex;
     int rflag = 0;
-    for (findex = (*TupleListPtr)(1); findex != Null && rflag == 0; findex = findex->next){
+    for (findex = (*TupleListPtr)(1); findex != NULL && rflag == 0; findex = findex->next){
       redundant = nest = 0;
       // Check for redundancy
       rflag = redundant_check(temp_filters[i],temp_filters[findex->key]);
@@ -584,9 +584,9 @@ int remove_redundant_filters(int num_filters, FilterList* filters, filter* temp_
   // Append filters to FilterList in order of most-specific tuple to least specific tuple
   for (int i = 0; i < TupleTree->size(); i++){
     TupleListPtr = TupleListPtrArray[i];
-    if (TupleListPtr == Null) {fprintf(stderr,"ERROR: TupleListPtrArray contains a null pointer."); exit(1);}
+    if (TupleListPtr == NULL) {fprintf(stderr,"ERROR: TupleListPtrArray contains a null pointer."); exit(1);}
     dlist_item* findex;
-    for (findex = (*TupleListPtr)(1); findex != Null; findex = findex->next){
+    for (findex = (*TupleListPtr)(1); findex != NULL; findex = findex->next){
       (*filters)&=temp_filters[findex->key];
     }
   }

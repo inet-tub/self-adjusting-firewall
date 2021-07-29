@@ -33,8 +33,8 @@ CommandLine::ParseArgs(int argc, char* argv[]) {
 		throwError.append(arg);
 		ASSERT(arg.find("=")!=std::string::npos ,throwError);
 
-		string doublehyphen = "--";
-		string hyphen = "-";
+		string doublehyphen = "%"; //temp change
+		string hyphen = "%"; //temp change
 		std::string par = arg.substr(0, 2);
 		if (par==doublehyphen){
 			arg = arg.substr(2);

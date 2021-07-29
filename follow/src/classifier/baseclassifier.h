@@ -8,10 +8,11 @@
 #ifndef CLASSIFIER_BASECLASSIFIER_H_
 #define CLASSIFIER_BASECLASSIFIER_H_
 
-#include "./../../tuplemerge/ElementaryClasses.h"
+#include "./../includes/external_includes.h"
 #include <vector>
 #include <list>
 #include <chrono>
+#include "./../cmd/CommandLine.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -27,7 +28,7 @@ public:
 	virtual ~BaseClassifier(){};
 
 	/* Creates the datastructure maintained by the classifier. The function should also update the number of rules and the bytes consumed. */
-	virtual int CreateClassifier(const vector<Rule>& rules) {return 0;}
+	virtual int CreateClassifier(CommandLine* cmd) {return 0;}
 
 	/* For inserting a rule. The function checks if the rule already exists, if not the rule is inserted in the datastructure. Num rules and bytes are updated  */
 	virtual unsigned int InsertRule(const Rule& r) {return 0;};

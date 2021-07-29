@@ -102,20 +102,20 @@ def checkOverlap(rule1, rule2):
     else:
         return False
 
-
-
 G = nx.DiGraph()
 for i in range(prio):
     G.add_node(i)
 
 for i in range(prio):
-    p = prio-1-i
-    for j in range(p):
+    # p = prio-1-i
+    p=i
+    for j in range(prio):
         rule1 = [srcIP[j],dstIP[j],srcPort[j],dstPort[j],protocol[j],priority[j]]
         rule2 = [srcIP[p],dstIP[p],srcPort[p],dstPort[p],protocol[p],priority[p]]
         if checkOverlap(rule1,rule2)==True:
             G.add_edge(p,j)
 #%%
+print(G.degree())
 
 depth=nx.dag_longest_path(G)
 print("Depth %d"%len(depth))

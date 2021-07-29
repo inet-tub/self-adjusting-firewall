@@ -57,7 +57,7 @@ struct node
 {
   int depth;
   int problematic;
-  int node_has_rule;
+  int node_has_rule=0;
   pc_rule boundary;
   list <pc_rule*> classifier;
   list <node *> children;
@@ -102,14 +102,6 @@ struct TreeStat
   unsigned long long total_memory_in_KB;
 };
 
-struct TreeDetails {
-	node* root;
-	std::vector<bool> wideFields;
-	TreeDetails() : root(nullptr) {
-		wideFields.resize(MAXDIMENSIONS);
-	}
-};
-
 struct MemBin
 {
   int Max_Depth;
@@ -126,7 +118,7 @@ public:
 
     int BuildClassifier();
 
-    int CreateClassifier(const vector<Rule>& ruleset);
+    int CreateClassifier(CommandLine* cmd);
 
     /* For inserting a rule. The function checks if the rule already exists, if not the rule is inserted in the datastructure. Num rules and bytes are updated  */
     unsigned int InsertRule(const Rule& r);
@@ -140,7 +132,7 @@ public:
     /* self-explanatory functions. Nothing fancy here. */
     unsigned int GetNumRules() const;
 
-    unsigned int GetMemorysize() const;
+    uint64_t GetMemorysize() const;
 
     /* Returns the time taken for creating the datastrucutre (tree/table/list) for the given ruleset. */
     double GetInitDelay() const;
@@ -156,6 +148,7 @@ public:
     void IP2Range(unsigned ip1,unsigned ip2,unsigned ip3,unsigned ip4,unsigned iplen,pc_rule *rule,int index);
 
     void LoadRulePtr(list <pc_rule> &rule_list,list <pc_rule*> &ruleptr_list,int start,int end);
+
 
 //    bool mycomparison(Rule* first,Rule* second);
 
@@ -255,6 +248,8 @@ public:
 
     bool inline IntersectsRule(pc_rule *r1, pc_rule *r2);
 
+    void PrintTrees();
+
 private:
     uint64_t totalNodesTraversed=0; // May overflow
     uint64_t totalAccess=0;
@@ -326,12 +321,12 @@ private:
     int treecount = 0;
     TreeStat* p_record;
     list <TreeStat*> Statistics;
-    list<TreeDetails> efficuts_trees;
-    list<TreeDetails> _trees;
 
     list<node* > allRoots;
 
     bool accessFound = false;
+
+    uint64_t totalMemoryBytes;
 	
 };
 

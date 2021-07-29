@@ -47,10 +47,10 @@ CPP_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-tuplemerge/PartitionSort/%.o: ../tuplemerge/PartitionSort/%.cpp tuplemerge/PartitionSort/subdir.mk
+tuplemerge/PartitionSort/%.o: ../tuplemerge/PartitionSort/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -O0 -g -pedantic -w -c -fmessage-length=0 -fpermissive  -O3 -Wall -fPIE -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	g++ -O3 -g -pedantic -w -c -fmessage-length=0 -fpermissive  -O3 -Wall -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

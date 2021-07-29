@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <sstream>
 
+
 namespace simulator{
 Tuplemerge::Tuplemerge(int limit):
 	limit(limit)
@@ -41,7 +42,11 @@ double Tuplemerge::GetInitDelay() const {
 }
 
 
-int Tuplemerge::CreateClassifier(const vector<Rule>& rules){
+int Tuplemerge::CreateClassifier(CommandLine* cmd){
+	string f="";
+	cmd->Get("ruleset", f);
+	rules= InputReader::ReadFilterFile(f);
+
 	time_point<steady_clock> start, end;
 		duration<double,std::milli> elapsed_milliseconds;
 		start = steady_clock::now();

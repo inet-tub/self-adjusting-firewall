@@ -27,7 +27,7 @@ using namespace simulator;
 int main(int argc, char* argv[]) {
 
 
-	string alg = "follow";
+	string alg = "ef";
 	CommandLine cmd;
 
 	cmd.ParseArgs(argc, argv);
@@ -35,46 +35,88 @@ int main(int argc, char* argv[]) {
 
 	string rulesetFile = "/home/vamsi/src/phd/self-adjusting-firewall/classbench/db_generator/MyFilters10k";
 	string traceFile = "/home/vamsi/src/phd/self-adjusting-firewall/classbench/db_generator/MyFilters10k_trace";
-	//	string traceFile = "/home/vamsi/src/phd/self-adjusting-firewall/classbench/db_generator/mytrace";
+//		string traceFile = "/home/vamsi/src/phd/self-adjusting-firewall/classbench/db_generator/mytrace";
+
+
+
+	string output = "./output.dat";
+	cmd.Get("outFile",output);
+	ofstream outputFile ;
+	outputFile.open(output,std::ios_base::app);
+
+    string Ps = "Follow";
+
+    double PsInit = 0;
+    int PsNumClass = 0;
+    double PsTotalClassTime = 0;
+    double PsAvgClassTime = 0;
+    int PsNumMisClass = 0;
+    double PsThroughput = 0;
+
+
+
+int trials=1;
 
 
 	cmd.Get("ruleset",rulesetFile);
 	cmd.Get("trace",traceFile);
 
+//	vector<Rule> rules = InputReader::ReadFilterFile(rulesetFile);
+	vector <Packet> trace = InputReader::ReadPackets(traceFile);
+	int number_rule= 0 ;
+	int number_pkt=trace.size();
+
 	if (alg=="follow"){
+			follow classifier;
+			classifier.setReconfigure(true);
+			classifier.setFastReconfigure(false);
+			classifier.CreateClassifier(&cmd);
+			std::cout << "InitDelayms " << classifier.GetInitDelay() << std::endl;
+			std::cout << "TotalMemoryBytes " <<classifier.GetMemorysize() << std::endl;
 
-		vector<Rule> rules = InputReader::ReadFilterFile(rulesetFile);
-		vector <Packet> trace = InputReader::ReadPackets(traceFile);
+			for (auto p:trace){
 
+				classifier.AccessRule(p);
+			}
+		std::cout << "AverageTraversed " <<classifier.GetAvgNodesTraversed()<< std::endl;
+	}
+	else if (alg=="followfast"){
+				follow classifier;
+				classifier.setReconfigure(true);
+				classifier.setFastReconfigure(true);
+				classifier.CreateClassifier(&cmd);
+				 std::cout << "InitDelayms " << classifier.GetInitDelay() << std::endl;
+				 std::cout << "TotalMemoryBytes " <<classifier.GetMemorysize() << std::endl;
+				for (auto p:trace){
+
+					classifier.AccessRule(p);
+				}
+			std::cout << "AverageTraversed " <<classifier.GetAvgNodesTraversed()<< std::endl;
+		}
+	else if (alg=="cuts"){
+		cuts CutsClassifier;
+		CutsClassifier.CreateClassifier(&cmd);
+
+		std::cout << "InitDelayms " << CutsClassifier.GetInitDelay() << std::endl;
+		std::cout << "TotalMemoryBytes " <<CutsClassifier.GetMemorysize() << std::endl;
+		for (auto p:trace){
+			CutsClassifier.AccessRule(p);
+		}
+		std::cout << "AverageTraversed " << CutsClassifier.GetAvgNodesTraversed() << std::endl;
+	}
+	else if (alg=="list"){
 		follow classifier;
-		classifier.CreateClassifier(rules);
-		std::cout << "InitDelayms " << classifier.GetInitDelay() << std::endl;
+		classifier.CreateClassifier(&cmd);
+		classifier.setReconfigure(false);
 
-		int count = 0;
+		std::cout << "InitDelayms " << classifier.GetInitDelay() << std::endl;
+		std::cout << "TotalMemoryBytes " <<classifier.GetMemorysize() << std::endl;
+
 		for (auto p:trace){
 
 			classifier.AccessRule(p);
-//			if (count > 10){
-//				break;
-//			}
-//			count++;
 		}
-		std::cout << "Average nodes traversed " << classifier.GetAvgNodesTraversed() << std::endl;
-	}
-	else{
-		vector <Packet> trace = InputReader::ReadPackets(traceFile);
-		cuts CutsClassifier;
-		CutsClassifier.parseargs(&cmd);
-		CutsClassifier.BuildClassifier();
-
-//		CutsClassifier.CreateClassifier(rules);
-//		std::cout << "InitDelayms " << CutsClassifier.GetInitDelay() << std::endl;
-
-		for (auto p:trace){
-			std::cout << "Nodes Accessed = " << CutsClassifier.AccessRule(p) << std::endl;
-		}
-//
-//		std::cout << "Average nodes traversed " << CutsClassifier.GetAvgNodesTraversed() << std::endl;
+	std::cout << "AverageTraversed " <<classifier.GetAvgNodesTraversed()<< std::endl;
 	}
 
 	return 0;

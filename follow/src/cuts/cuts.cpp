@@ -26,7 +26,7 @@ using namespace std;
 namespace simulator{
 
 cuts::cuts() {
-
+	totalMemoryBytes=0;
 
 }
 
@@ -171,30 +171,30 @@ cuts::parseargs(CommandLine* cmd) {
 	  bool help=false;
 	  string file;
 
-	  cmd->Get("bucketSize",bucketSize);
+	  cmd->Get("bucketSize",bucketSize); // 16
 
-	  cmd->Get("spfac",spfac);
+	  cmd->Get("spfac",spfac); // 8
 
-	  cmd->Get("num_intervals",num_intervals);
+	  cmd->Get("num_intervals",num_intervals); // 7
 
-	  cmd->Get("hypercuts",hypercuts);
+	  cmd->Get("hypercuts",hypercuts); // 1
 
 	  cmd->Get("ruleset", file);
 	  fpr = fopen(file.c_str(), "r");
 
-	  cmd->Get("pushup",Num_Rules_Moved_Up);
+	  cmd->Get("pushup",Num_Rules_Moved_Up); // 0
 
-	  cmd->Get("compress",compressionON);
+	  cmd->Get("compress",compressionON); // 1
 
-	  cmd->Get("binON",binningON);
+	  cmd->Get("binON",binningON);// 1
 
-	  cmd->Get("mergingON",mergingON);
+	  cmd->Get("mergingON",mergingON); // 1
 
-	  cmd->Get("bin",bin);
+	  cmd->Get("bin",bin); // 0.5
 
-	  cmd->Get("IPbin",IPbin);
+	  cmd->Get("IPbin",IPbin); // 0.05
 
-	  cmd->Get("thirtyone",thirtyone);
+	  cmd->Get("thirtyone",thirtyone); // 0
 
 	  cmd->Get("cutsHelp",help);
 
@@ -262,32 +262,34 @@ cuts::parseargs(CommandLine* cmd) {
 	    ok = 0;
 	  }
 	  if (!ok) {
-		  fprintf(stderr,"valid options:\n "
-		  			  "--bucketSize <bucketSize> \n"
-		  			  "--spfac <spfac>\n"
-		  			  "--num_intervals <num_intervals>\n"
-		  			  "--hypercuts <0 for hicuts | 1 for hypercuts>\n"
-		  			  "--pushup <num move up>\n"
-		  			  "--compress <0 or 1>\n"
-		  			  "--bin <0 or 1>\n"
-		  			  "--IPbin <IPbin>\n"
-		  			  "--cutsHelp\n"
-		  			  );
+		 fprintf(stderr,"valid options:\n "
+		  		  		  			  "--bucketSize <bucketSize> \n"
+		  		  		  			  "--spfac <spfac>\n"
+		  		  		  			  "--num_intervals <num_intervals>\n"
+		  		  		  			  "--hypercuts <0 for hicuts | 1 for hypercuts>\n"
+		  		  		  			  "--pushup <num move up>\n"
+		  		  		  			  "--compress <0 or 1>\n"
+		  		  		  			  "--binON <0 or 1>\n"
+		  			  	  	  	  "--merging <0 or 1>\n"
+		                      "--bin <0 to 2>\n"
+		  		  		  			  "--IPbin <IPbin>\n"
+		  		  		  			  "--cutsHelp\n"
+		  		  		  			  );
 	    exit(1);
 	  }
 
-	  printf("******************************************\n");
-	  printf("Bucket Size =  %d\n", bucketSize);
-	  printf("Space Factor = %f\n", spfac);
-	  printf("bin = %f\n",bin);
-		printf("IPbin = %f\n",IPbin);
-	  printf("hypercuts = %d\n",hypercuts);
-	  printf("Num_Rules_Moved_Up = %d\n",Num_Rules_Moved_Up);
-	  printf("compressionON = %d\n",compressionON);
-	  printf("binningON = %d\n",binningON);
-	  printf("mergingON = %d\n",mergingON);
-	  printf("num_intervals = %d\n",num_intervals);
-	  printf("******************************************\n");
+//	  printf("******************************************\n");
+//	  printf("Bucket Size =  %d\n", bucketSize);
+//	  printf("Space Factor = %f\n", spfac);
+//	  printf("bin = %f\n",bin);
+//		printf("IPbin = %f\n",IPbin);
+//	  printf("hypercuts = %d\n",hypercuts);
+//	  printf("Num_Rules_Moved_Up = %d\n",Num_Rules_Moved_Up);
+//	  printf("compressionON = %d\n",compressionON);
+//	  printf("binningON = %d\n",binningON);
+//	  printf("mergingON = %d\n",mergingON);
+//	  printf("num_intervals = %d\n",num_intervals);
+//	  printf("******************************************\n");
 }
 
 void
@@ -568,6 +570,122 @@ cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
 
 }
 
+//void
+//cuts::calc_dimensions_to_cut(node *curr_node,int *select_dim)
+//{
+//  int unique_elements[MAXDIMENSIONS];
+//  double average = 0;
+//  //int average = 0;
+//  range check;
+//  for (int i = 0;i < MAXDIMENSIONS;++i)
+//  {
+//    list <range> rangelist;
+//    rangelist.clear();
+//    for (list<pc_rule*>::iterator rule = curr_node->classifier.begin();
+//        rule != curr_node->classifier.end();++rule)
+//    {
+//      int found = 0;
+//      if ((*rule)->field[i].low > curr_node->boundary.field[i].low) {
+//        check.low = (*rule)->field[i].low;
+//      } else {
+//        check.low = curr_node->boundary.field[i].low;
+//      }
+//      if ((*rule)->field[i].high < curr_node->boundary.field[i].high) {
+//        check.high = (*rule)->field[i].high;
+//      } else {
+//        check.high = curr_node->boundary.field[i].high;
+//      }
+//      for (list <range>::iterator range = rangelist.begin();
+//          range != rangelist.end();++range)
+//      {
+//        if (check.low == (*range).low && check.high == (*range).high)
+//        {
+//          found = 1;
+//          break;
+//        }
+//      }
+//      if (!found)
+//        rangelist.push_back(check);
+//    }
+//    unique_elements[i] = rangelist.size();
+//      //printf("unique_elements[%d] = %d\n",i,unique_elements[i]);
+//
+//  }
+//
+//  int dims_cnt = 0;
+//  for (int i = 0;i < MAXDIMENSIONS;++i)
+//  {
+//    if (curr_node->boundary.field[i].high > curr_node->boundary.field[i].low)
+//    {
+//      average += unique_elements[i];
+//      dims_cnt++;
+//    }
+//  }
+//  average = average / dims_cnt;
+//
+//  int max = -1;
+//  for (int i = 0;i < MAXDIMENSIONS;++i)
+//  {
+//    if (curr_node->boundary.field[i].high > curr_node->boundary.field[i].low)
+//      if (unique_elements[i] > max)
+//        max = unique_elements[i];
+//  }
+//
+//  // Daly: made it so only dimensions strictly greater than the average get picked
+//  // Such a dimension must exist unless all are equal
+//  // So we detect such a case
+//  // This encourages slightly higher draws
+//  bool areEqual = true;
+//  for (int i = 0;i < MAXDIMENSIONS;++i)
+//  {
+//    select_dim[i] = 0;
+//    if (unique_elements[i] != average && curr_node->boundary.field[i].high > curr_node->boundary.field[i].low)
+//        areEqual = false;
+//  }
+//
+//  if (areEqual)
+//  {
+//      cout << "all are equal" << endl;
+//      for (int i = 0; i < MAXDIMENSIONS; i++)
+//      {
+//          if (curr_node->boundary.field[i].high > curr_node->boundary.field[i].low)
+//          {
+//              cout << i << " " << unique_elements[i] << endl;
+//              select_dim[i] = 1;
+//              return;
+//          }
+//      }
+//  }
+//
+//  int dim_count = 0;
+//  for (int i = 0;i < MAXDIMENSIONS;++i)
+//  {
+//    if (curr_node->boundary.field[i].high > curr_node->boundary.field[i].low)
+//    {
+//      if (hypercuts)
+//      {
+//        if (unique_elements[i] > average) // Daly: changed to strictly greater
+//        {
+//          select_dim[i] = 1;
+//          dim_count++;
+//          // don't cut on more than 2 dimensions
+//          if (dim_count == 2)
+//            break;
+//        }
+//      }
+//      else
+//      {
+//        if (unique_elements[i] == max)
+//        {
+//          select_dim[i] = 1;
+//          break;
+//        }
+//      }
+//    }
+//  }
+//
+//}
+
 void
 cuts::cp_node(node* src,node* dest)
 {
@@ -583,6 +701,8 @@ cuts::cp_node(node* src,node* dest)
   dest->classifier = src->classifier;
 
   dest->children = src->children;
+
+  dest->nextGen = src->nextGen;
 
   for (int i = 0;i < MAXDIMENSIONS;i++)
     dest->cuts[i] = src->cuts[i];
@@ -618,8 +738,8 @@ cuts::calc_num_cuts_1D(node *root,int dim)
     exit(1);
   }
 
-  node* top = new node;
-  cp_node(root,top);
+  node* top = new node(*root);
+//  cp_node(root,top);
 
   childlist.push_back(top);
 
@@ -635,9 +755,9 @@ cuts::calc_num_cuts_1D(node *root,int dim)
         sm = 1 << nump;
         prev_depth = curr_node->depth;
         Index = 0;
+//        std::cout << sm << " " << spmf << " " << nump << std::endl;
       }
       else{
-//    	  std::cout << "sm " << sm << std::endl;
     	  break;
       }
     }
@@ -701,7 +821,7 @@ cuts::calc_num_cuts_1D(node *root,int dim)
 }
 
 void
-cuts::LinearizeChildren(int RowSize)
+cuts::LinearizeChildren(int RowSize) // Here RowSize means the number of rows not the number of items in each row (atleast from my understanding)
 {
 
   for (list <node*>::iterator item = childlist.begin();
@@ -778,8 +898,8 @@ cuts::calc_num_cuts_2D(node *root,int *dim)
     exit(1);
   }
 
-  node* top = new node;
-  cp_node(root,top);
+  node* top = new node(*root);
+//  cp_node(root,top);
 
   childlist.push_back(top);
 
@@ -801,7 +921,7 @@ cuts::calc_num_cuts_2D(node *root,int *dim)
         break;
     }
 
-    //  printf("[%d,%d] -> ",curr_node->Row,curr_node->Column);
+//      printf("[%d,%d] -> ",curr_node->Row,curr_node->Column);
 
     for (int k = 0;k < 2;k++)
     {
@@ -922,6 +1042,7 @@ cuts::calc_cuts(node *curr_node)
   if (chosen_cnt == 2)
   {
     calc_num_cuts_2D(curr_node,chosen_dim);
+//    std::cout << "2DCuts finally!" << std::endl;
   }
   else if (chosen_cnt == 1)
   {
@@ -955,8 +1076,8 @@ cuts::createBoundary(node *a,node *b,node *c)
 int
 cuts::LogicalMerge(node* a,node* b,int Max)
 {
-  node *c = new node;
-  cp_node(a,c);
+  node *c = new node(*a);
+//  cp_node(a,c);
   createBoundary(a,b,c);
   c->classifier.clear();
 
@@ -993,52 +1114,106 @@ cuts::LogicalMerge(node* a,node* b,int Max)
 bool
 cuts::NodeCompress(list <node*> &nodelist)
 {
-  uint64_t Max=0;
-  int merge_possible = compressionON;
-  uint64_t original_size = nodelist.size();
-  while (merge_possible)
-  {
-    merge_possible = 0;
+//  uint64_t Max=0;
+//  int merge_possible = compressionON;
+//  uint64_t original_size = nodelist.size();
+//  while (merge_possible)
+//  {
+//    merge_possible = 0;
+//
+//    // find the max. rules among all child nodes
+//    Max = 0;
+//    for (list <node*>::iterator item = nodelist.begin();
+//        item != nodelist.end();++item)
+//    {
+//      if ((*item)->classifier.size() > Max)
+//        Max = (*item)->classifier.size();
+//    }
+//
+//
+//    for (list <node*>::iterator item = nodelist.begin();
+//        item != nodelist.end();++item)
+//    {
+//      ++item;
+//      list <node*>::iterator item_p1 = item;
+//      --item;
+//      if (item_p1 != nodelist.end())
+//      {
+//        if (LogicalMerge(*item,*item_p1,Max))
+//        {
+//          nodelist.erase(item_p1);
+//          ClearMem(*item_p1);
+//          merge_possible = 1;
+//        }
+//      }
+//    }
+//  }
+//
+//  if (nodelist.size() > original_size)
+//  {
+//    printf("Error: Compression resulted in increase of nodes!\n");
+//    exit(1);
+//  }
+//
+//  if (nodelist.size() < original_size)
+//    return true;
+//  else
+//    return false;
 
-    // find the max. rules among all child nodes
-    Max = 0;
-    for (list <node*>::iterator item = nodelist.begin();
-        item != nodelist.end();++item)
-    {
-      if ((*item)->classifier.size() > Max)
-        Max = (*item)->classifier.size();
-    }
+    uint32_t merge_possible = compressionON;
+    uint32_t original_size = nodelist.size();
 
-
-    for (list <node*>::iterator item = nodelist.begin();
-        item != nodelist.end();++item)
-    {
-      ++item;
-      list <node*>::iterator item_p1 = item;
-      --item;
-      if (item_p1 != nodelist.end())
-      {
-        if (LogicalMerge(*item,*item_p1,Max))
-        {
-          nodelist.erase(item_p1);
-          ClearMem(*item_p1);
-          merge_possible = 1;
+    while (merge_possible) {
+        merge_possible = 0;
+        // Find the node with the largest number of rules
+        uint32_t max=0;
+        for (auto node : nodelist) {
+        	max = node->classifier.size() > max ? node->classifier.size() : max;
         }
-      }
+
+        // Try to merge adjacent nodes
+        auto first_it = nodelist.begin();
+        while (first_it != nodelist.end()) {
+
+        	// Get first node
+        	node* current_item = *first_it;
+
+        	// Get next node
+        	auto next_it = first_it;
+        	++next_it;
+        	node* next_item = *next_it;
+			if (next_it == nodelist.end()) break;
+
+        	// Try to merge both nodes
+        	list<pc_rule*> merged_rules = current_item->classifier;
+        	merged_rules.insert(merged_rules.begin(), next_item->classifier.begin(), next_item->classifier.end());
+        	merged_rules.sort(mycomparison);
+        	merged_rules.unique(myequal);
+
+        	// What is the larger rule list?
+        	uint32_t maxsize = std::max(current_item->classifier.size(), next_item->classifier.size());
+
+        	// In case the merge is valid
+        	if ( (merged_rules.size() <= bucketSize) ||
+        		((merged_rules.size() <= maxsize) && (merged_rules.size() < max)) )
+        	{
+        		node tmp_node;
+        		createBoundary(current_item, next_item, &tmp_node);
+        		current_item->classifier=merged_rules;
+        		current_item->boundary=tmp_node.boundary;
+
+        		// Next node is no longer required
+
+        		delete next_item;
+        		nodelist.erase(next_it);
+        		merge_possible = 1;
+        	}
+
+        	++first_it;
+        }
     }
-  }
 
-  if (nodelist.size() > original_size)
-  {
-    printf("Error: Compression resulted in increase of nodes!\n");
-    exit(1);
-  }
-
-  if (nodelist.size() < original_size)
-    return true;
-  else
-    return false;
-
+    return nodelist.size() < original_size;
 }
 
 void
@@ -1087,6 +1262,10 @@ cuts::NodeStats(node *curr_node)
 
   if (mcuts > Max_Cuts)
     Max_Cuts = mcuts;
+
+//  for (int i=0;i<MAXDIMENSIONS; i++){
+//	  std::cout << curr_node->cuts[i] << std::endl;
+//  }
 
   // checks
   if ( curr_node->classifier.size() > bucketSize &&
@@ -1374,6 +1553,8 @@ cuts::RecordTreeStats()
 
   p_record->total_memory_in_KB = p_record->total_memory / 1024;
 
+  totalMemoryBytes+= p_record->total_memory;
+
   Statistics.push_back(p_record);
 
 }
@@ -1459,15 +1640,16 @@ cuts::samerules(node * r1, node * r2) {
   return 1;
 }
 
-list<node*>
-cuts::nodeMerging(node * curr_node) {
+//list<node*>
+//cuts::nodeMerging(node * curr_node) {
 // 	list<node*> newlist = curr_node->children;
 //   int num = 0;
 //   list<node*>::iterator itr2;
 // /*	for(list<node*>::iterator junk = curr_node->children.begin(); junk != curr_node->children.end();junk++) {
 // 		remove_redund(junk++);
 // 	}*/
-
+//
+//   std::cout << newlist.size() << std::endl;
 //   for (list<node*>::iterator itr1 = newlist.begin(); itr1 != newlist.end(); itr1++) {
 //     itr2 = itr1;
 //     itr2++;
@@ -1494,18 +1676,22 @@ cuts::nodeMerging(node * curr_node) {
 //     printf("Odd: Of %d children, %d were identical\n",newlist.size(),num);
 //   }
 //   return newlist;
+//}
+
+list<node*>
+cuts::nodeMerging(node * curr_node) {
     list<node*> newlist = curr_node->children;
     auto first_it = newlist.begin();
 
     while (first_it != newlist.end()) {
 
-      auto second_it = first_it;
-      ++second_it;
+    	auto second_it = first_it;
+    	++second_it;
 
         while(second_it != newlist.end()) {
-          // Merge nodes that have the same rules
+        	// Merge nodes that have the same rules
             if (samerules(*first_it, *second_it)) {
-              // The merged node should have the tighter boundaries between the two
+            	// The merged node should have the tighter boundaries between the two
                 for (int i = 0; i < MAXDIMENSIONS; i++) {
                     if ((*first_it)->boundary.field[i].low > (*second_it)->boundary.field[i].low) {
                         (*first_it)->boundary.field[i].low = (*second_it)->boundary.field[i].low;
@@ -1576,7 +1762,7 @@ void
 cuts::create_tree(list <pc_rule*> p_classifier)
 {
 
-  printf("Incoming No of Rules in this tree = %d\n",p_classifier.size());
+//  printf("Incoming No of Rules in this tree = %d\n",p_classifier.size());
 
   list <node*> worklist;
 
@@ -1615,9 +1801,13 @@ cuts::create_tree(list <pc_rule*> p_classifier)
     root->problematic = 0;
     NodeStats(root);
   }
+  allRoots.push_back(root);
+
+//  std::cout << "debug1" << std::endl;
 
   while (!worklist.empty())
   {
+//	  std::cout << "debug2" << std::endl;
     curr_node = worklist.back();
 
     worklist.pop_back();
@@ -1626,6 +1816,7 @@ cuts::create_tree(list <pc_rule*> p_classifier)
 		if (hypercuts) {
 			regionCompaction(curr_node);
 		}
+//		std::cout << "childList " << childlist.size() << std::endl;
     calc_cuts(curr_node);
 
     for (list <node*>::iterator item = childlist.begin();
@@ -1640,9 +1831,11 @@ cuts::create_tree(list <pc_rule*> p_classifier)
         item != childlist.end();++item)
       curr_node->children.push_back(*item);
 
+//    std::cout << "children " << curr_node->children.size() << std::endl;
     childlist.clear();
 
     if (compressionON) {
+//    	std::cout << "debug3" << std::endl;
       moveRulesUp(curr_node);
 
       // backup the number of children, incase compression
@@ -1652,18 +1845,16 @@ cuts::create_tree(list <pc_rule*> p_classifier)
           item != curr_node->children.end();++item)
       {
         // create a new node and make a copy
-        node *child_copy = new node;
-        cp_node(*item,child_copy);
+        node *child_copy = new node(**item);
+//        cp_node(*item,child_copy);
         Backup.push_back(child_copy);
       }
+//      std::cout << "backupSize " << Backup.size() << std::endl;
 
       curr_node->is_compressed = NodeCompress(curr_node->children);
-
-      printf("ChildrenBefore: %d\n",curr_node->children.size());
-
+//      std::cout << "debug6" << std::endl;
       if (curr_node->children.size() > num_intervals)
       {
-//         printf("Before: %d\n",curr_node->children.size());
         // clear the current children
         for (list <node*>::iterator item = curr_node->children.begin();
             item != curr_node->children.end();++item)
@@ -1682,7 +1873,6 @@ cuts::create_tree(list <pc_rule*> p_classifier)
 
         curr_node->is_compressed = false;
 
-        // printf("After: %d\n",curr_node->children.size());
       }
       else
       {
@@ -1693,8 +1883,7 @@ cuts::create_tree(list <pc_rule*> p_classifier)
           ClearMem(*item);
         }
       }
-      printf("ChildrenAfter: %d\n",curr_node->children.size());
-
+//      std::cout << "debug7" << std::endl;
       Backup.clear();
     }
 
@@ -1705,23 +1894,17 @@ cuts::create_tree(list <pc_rule*> p_classifier)
 
     // HEURISTIC 1 - create a list of nodes that should actually exist - both leaf and non-leaf
     list<node*> topush = nodeMerging(curr_node);
-    nextGenlist.clear();
-    nextGenlist = topush;
-    curr_node->nextGen.clear();
-    for (auto ng : nextGenlist){
-    	curr_node->nextGen.push_back(ng);
-    }
-//    curr_node->nextGen.insert(curr_node->nextGen.end(), topush.begin(), topush.end());
-
+//    std::cout << "debug8" << std::endl;
     // HEURISTIC 2
     for (list <node*>::iterator item = topush.begin();item != topush.end();++item)
     {
       remove_redund(*item);
     }
-
+//    std::cout << "debug4" << std::endl;
     for (list <node*>::iterator item = topush.begin();
         item != topush.end();++item)
     {
+//    	std::cout << "debug5" << std::endl;
 
       if ((*item)->classifier.size() > bucketSize)
       {
@@ -1732,19 +1915,21 @@ cuts::create_tree(list <pc_rule*> p_classifier)
             (*item)->boundary.field[4].low == curr_node->boundary.field[4].low && (*item)->boundary.field[4].high == curr_node->boundary.field[4].high &&
             (*item)->classifier.size() == curr_node->classifier.size())
         {
-          printf("Warning: parent and child are identical with %d rules!\n",curr_node->classifier.size());
+//          printf("Warning: parent and child are identical with %d rules!\n",curr_node->classifier.size());
           (*item)->problematic = 1;
           NodeStats(*item);
-          ClearMem(*item);
+          curr_node->nextGen.push_back(*item);
+//          ClearMem(*item);
         }
         else
         {
           worklist.push_back(*item);
+          curr_node->nextGen.push_back(*item);
           if (worklist.size() > Max_WorklistSize)
           {
             Max_WorklistSize = worklist.size();
-            if (Max_WorklistSize % 100 == 0)
-              printf("Worklist.size() = %lld\n",Max_WorklistSize);
+//            if (Max_WorklistSize % 100 == 0)
+//              printf("Worklist.size() = %lld\n",Max_WorklistSize);
           }
         }
       }
@@ -1754,15 +1939,17 @@ cuts::create_tree(list <pc_rule*> p_classifier)
         {
           (*item)->problematic = 0;
           NodeStats(*item);
+          curr_node->nextGen.push_back(*item);
         }
-        ClearMem(*item);
+//        ClearMem(*item);
       }
     }
 
     curr_node->problematic = 0;
     NodeStats(curr_node);
+//    printf("%d\n",curr_node->classifier.size());
 
-    ClearMem(curr_node);
+//    ClearMem(curr_node); // The fuck.
 
   }
 
@@ -1773,6 +1960,8 @@ cuts::IP2Range(unsigned ip1,unsigned ip2,unsigned ip3,unsigned ip4,unsigned iple
 {
   unsigned tmp;
   unsigned Lo,Hi;
+//  uint64_t tmp;
+//  uint64_t Lo,Hi;
 
   if(iplen == 0){
     Lo = 0;
@@ -2033,7 +2222,7 @@ cuts::binRules() {
  */
 void
 cuts::MergeTrees() {
-  printf("Number of trees before merge: %d\n",numTrees);
+//  printf("Number of trees before merge: %d\n",numTrees);
   int merged[26]; // array - if the value is 0 than that try is not merged, if it is 1 it has been and is NOT a candidate for merging anymore!
   for (int i = 0; i < 26; i++) { merged[i] = 0; } // make sure array is initialized to 0
 
@@ -2345,13 +2534,13 @@ cuts::MergeTrees() {
     }
   }
 #endif
-  printf("Number of trees after merge: %d\n",numTrees);
+//  printf("Number of trees after merge: %d\n",numTrees);
 }
 
 void
 cuts::LoadRulePtr(list <pc_rule> &rule_list,list <pc_rule*> &ruleptr_list,int start,int end)
 {
-  printf("Rule:%d - %d\n",start,end);
+//  printf("Rule:%d - %d\n",start,end);
   int count = 0;
   for (list <pc_rule>::iterator i = rule_list.begin();i != rule_list.end();++i)
   {
@@ -2389,9 +2578,9 @@ cuts::BinPack(int bins,list <TreeStat*> Statistics)
   }
 
 
-  printf("******************************************\n");
-  printf("Memory Channels = %d\n",bins);
-  printf("******************************************\n");
+//  printf("******************************************\n");
+//  printf("Memory Channels = %d\n",bins);
+//  printf("******************************************\n");
   int count = 0;
   int ADJUSTED_OVERALL_DEPTH = 0;
 	int ADJUSTED_OVERALL_LEVELS = 0;
@@ -2403,17 +2592,16 @@ cuts::BinPack(int bins,list <TreeStat*> Statistics)
 
     if ((*iter)->Max_Levels > ADJUSTED_OVERALL_LEVELS)
       ADJUSTED_OVERALL_LEVELS = (*iter)->Max_Levels;
-    printf("Channel %d: Depth = %d Levels = %d Memory = %llu;Trees - ",count++,
-              (*iter)->Max_Depth,(*iter)->Max_Levels,(*iter)->total_memory);
-    for (list<TreeStat*>::iterator sub_iter = (*iter)->Trees.begin();
-            sub_iter != (*iter)->Trees.end();sub_iter++)
-    {
-      printf("{%d} ",(*sub_iter)->Id);
-    }
-    printf("\n");
+//    printf("Channel %d: Depth = %d Levels = %d Memory = %llu;Trees - ",count++, (*iter)->Max_Depth,(*iter)->Max_Levels,(*iter)->total_memory);
+//    for (list<TreeStat*>::iterator sub_iter = (*iter)->Trees.begin();
+//            sub_iter != (*iter)->Trees.end();sub_iter++)
+//    {
+//      printf("{%d} ",(*sub_iter)->Id);
+//    }
+//    printf("\n");
   }
-  printf("ADJUSTED_OVERALL_DEPTH: %d\n",ADJUSTED_OVERALL_DEPTH);
-	printf("ADJUSTED_OVERALL_LEVELS: %d\n",ADJUSTED_OVERALL_LEVELS);
+//  printf("ADJUSTED_OVERALL_DEPTH: %d\n",ADJUSTED_OVERALL_DEPTH);
+//	printf("ADJUSTED_OVERALL_LEVELS: %d\n",ADJUSTED_OVERALL_LEVELS);
 
 
 }
@@ -2430,7 +2618,7 @@ cuts::ComputeCutoffs()
   for (int i = 0;i < NUM_JUNK;i++)
   {
     Cutoffs[i] = numrules * Percents[i] / 100;
-    printf("Cutoffs[%d] = %lld\n",i,Cutoffs[i]);
+//    printf("Cutoffs[%d] = %lld\n",i,Cutoffs[i]);
   }
   Num_Junk = NUM_JUNK;
   return 0;
@@ -2449,7 +2637,7 @@ cuts::BuildClassifier(){
   rewind(fpr);
 
 
-  printf("number of rules read from file = %d\n", numrules);
+//  printf("number of rules read from file = %d\n", numrules);
 
   classifier.clear();
   int numrules1 = loadrule(fpr);
@@ -2460,6 +2648,11 @@ cuts::BuildClassifier(){
     exit(1);
   }
   fclose(fpr);
+  time_point<steady_clock> start, end;
+
+      duration<double,std::milli> elapsed_milliseconds;
+
+      start = steady_clock::now();
 
 //  printf("doing done!");
   ComputeCutoffs();
@@ -2477,9 +2670,6 @@ cuts::BuildClassifier(){
       if (!(bigrules[i].empty())) {
         InitStats(bigrules[i].size());
         create_tree(bigrules[i]);
-        TreeDetails details;
-        details.root = root;
-        efficuts_trees.push_back(details);
         RecordTreeStats();
         bigrules[i].clear();
       }
@@ -2488,9 +2678,6 @@ cuts::BuildClassifier(){
       if (!(kindabigrules[j].empty())) {
         InitStats(kindabigrules[j].size());
         create_tree(kindabigrules[j]);
-        TreeDetails details;
-        details.root = root;
-        efficuts_trees.push_back(details);
         RecordTreeStats();
         kindabigrules[j].clear();
       }
@@ -2499,9 +2686,6 @@ cuts::BuildClassifier(){
       if (!(mediumrules[k].empty())) {
         InitStats(mediumrules[k].size());
         create_tree(mediumrules[k]);
-        TreeDetails details;
-        details.root = root;
-        efficuts_trees.push_back(details);
         RecordTreeStats();
         mediumrules[k].clear();
       }
@@ -2510,9 +2694,6 @@ cuts::BuildClassifier(){
       if (!(littlerules[l].empty())) {
         InitStats(littlerules[l].size());
         create_tree(littlerules[l]);
-        TreeDetails details;
-        details.root = root;
-        efficuts_trees.push_back(details);
         RecordTreeStats();
         mediumrules[l].clear();
       }
@@ -2520,9 +2701,6 @@ cuts::BuildClassifier(){
     if (!(smallrules.empty())) {
       InitStats(smallrules.size());
       create_tree(smallrules);
-      TreeDetails details;
-      details.root = root;
-      efficuts_trees.push_back(details);
       RecordTreeStats();
       smallrules.clear();
     }
@@ -2550,25 +2728,40 @@ cuts::BuildClassifier(){
       start = end + 1;
       InitStats(p_classifier.size());
       create_tree(p_classifier);
-      TreeDetails details;
-      details.root = root;
-      efficuts_trees.push_back(details);
       RecordTreeStats();
       p_classifier.clear();
     }
 
   }
 
-  // Statistics
-  PrintStats();
+  end = steady_clock::now();
 
-   _trees = efficuts_trees;
+      elapsed_milliseconds = end - start;
+
+      this->initDelay = elapsed_milliseconds.count();
+
+  // Statistics
+//  PrintStats();
+
+//  PrintTrees();
+
+
 
 //  BinPack(1,Statistics);
 //  BinPack(2,Statistics);
 //  BinPack(3,Statistics);
 //  BinPack(4,Statistics);
   return 0;
+}
+
+
+void
+cuts::PrintTrees(){
+	int count = 0;
+	for (auto iter: allRoots){
+		std::cout << "Tree " << count << " root -> children " << iter->nextGen.size()<< std::endl;
+
+	}
 }
 
 bool inline
@@ -2597,172 +2790,225 @@ cuts::IntersectsRule(pc_rule *r1, pc_rule *r2) {
 int
 cuts::AccessList(list<pc_rule*> &roots, const Packet& p){
 
-	if (!roots.empty()){
-		std::cout << roots.size() << std::endl;
-	for (auto iter : roots){
-//		for(list<Rule*>::iterator iter = roots.begin(); iter != roots.end(); iter++)
-		totalNodesTraversed++;
-		if (MatchesPacket(p,iter)){
-			return iter->priority;
-		}
-	}
-	}
-
-	return -1;
-}
-
-
-//node*
-//cuts::AccessTree(node* item, const Packet& p){
-//
-//	totalNodesTraversed++;
-//
-////	node* next =NULL ;
-//
-//
-//	if (!MatchesPacket(p,&(item->boundary))){
-//		std::cout << "did not match root boundary" << std::endl;
-//		return NULL;
-//	}
-//	else if (item->nextGen.empty())
-//    {
-//    	std::cout << "nextGen empty" << std::endl;
-//        /* Check the list of rules now, since there are no more children */
-//    	if (!item->classifier.empty()){
-//    	int found = AccessList(item->classifier, p);
-//    	if (found)
-//    		return item;
-//    	else{
-//    		return NULL;
-//    	}
-//    	}
-//    	else
-//    		return NULL;
-//    }
-//    else
-//    {
-//    	std::cout << "nextGen not empty size = ";
-//    	std::cout << int(item->nextGen.size()) << std::endl;
-//        for (auto it : item->nextGen)
-////    	for(list<node*>::iterator it = item->nextGen.begin(); it != item->nextGen.end(); it++)
-//        {
-//    		std::cout << "arrived inside for loop" << std::endl;
-//        	totalNodesTraversed++;
-////
-////        	(&(*it)->boundary)->Print();
-////        	std::cout << it << std::endl;
-////        	if (it==NULL)
-////        		std::cout << "Damn" << std::endl;
-//
-//            if ( MatchesPacket(p,&(it->boundary)))
-//            {
-//            	std::cout << "matched a nextGen boundary" << std::endl;
-////            	next = it;
-////            	break;
-////            	return it;
-//            	node* found = AccessTree(it, p);
-//            	if (found!=NULL)
-//            		return found;
-//            }
-//        }
-////        return next;
-//    }
-//
-//    return NULL;
-//}
-
-int
-cuts::AccessTree(node* item, const Packet& p){
-
-
-	bool found = false;
-	found = MatchesPacket(p,&(item->boundary));
-	if (!found){
-		return 0;
-	}
-	else if (item->children.empty()){
-		found = AccessList(item->classifier, p);
-		if (found){
-			accessFound = true;
-			return 1;
-		}
-	}
-	else{
-
-		for (auto iter : item->children){
-			if (MatchesPacket(p,&(iter->boundary))){
-				found = AccessTree(iter,p);
-				if (found){
-					return 1;
-				}
+		for (auto iter : roots){
+			if (MatchesPacket(p,iter)){
+//				std::cout << iter->field[0].low << " " << iter->field[0].high << " " << iter->field[1].low << " " << iter->field[1].high << " "  << iter->field[2].low << " " << iter->field[2].high << " " << iter->field[3].low << " " << iter->field[3].high << " " << iter->field[4].low << " " << iter->field[4].high << " " << std::endl;
+				return 1;
 			}
 		}
-
-	}
 	return 0;
-
-//	    if (item->children.empty())
-//	    {
-//	        // Check list
-//	        return AccessList(item->classifier, p);
-////	        if(ans){
-////	        	return item;
-////	        }
-////	        else{
-////	        	return NULL;
-////	        }
-//	    }
-//	    else
-//	    {
-//	        // Check children
-//
-////	        node* found=NULL;
-//	        int color = -1;
-//
-//	        for (list<node*>::iterator iter = item->children.begin();
-//	                iter != item->children.end(); iter++)
-//	        {
-//	        	std::cout << item->children.size() << " " << item->nextGen.size() << std::endl;
-//	            if (MatchesPacket(p,&(*iter)->boundary))
-//	            {
-////	                found = AccessTree(*iter, p);
-////	                if (found!=NULL)
-////	                    break;
-//	            	int c = AccessTree(*iter, p);
-//	            	if (color < 0 || (c < color && c >= 0))
-//	            		color = c;
-//	            }
-//	        }
-//
-////	        return found;
-//	        return color;
-//	    }
-//
-//	    // No match
-//	    return -1;
 }
+
+
+int
+cuts::AccessTree(node* tree, const Packet& p)
+{
+
+   int found = 0;
+   found = MatchesPacket(p,&(tree->boundary));
+   if (!found){
+     return 0;
+   }
+   else if (tree->children.empty()){
+     found = AccessList(tree->classifier, p);
+     if (found){
+       accessFound = true;
+//        std::cout << "Afound at depth " << item->depth << std::endl;
+       return 1;
+     }
+   }
+   else
+   {
+       for (list<node*>::iterator iter = tree->nextGen.begin();
+               iter != tree->nextGen.end(); iter++)
+       {
+           if (MatchesPacket(p,&(*iter)->boundary))
+           {
+        	   uint64_t temp = totalNodesTraversed;
+               found = AccessTree(*iter, p);
+               if (found)
+                 return found;
+               else{
+            	   totalNodesTraversed = temp;
+//                std::cout << "miscount" << std::endl;
+               }
+           }
+           else{
+              totalNodesTraversed--;
+           }
+       }
+
+       return found;
+   }
+
+   // No match
+   return found;
+}
+
+
+//  int
+//  cuts::AccessTree(node* item, const Packet& p){
+
+//  	list <node*> check;
+
+//  	int found = 0;
+//  		found = MatchesPacket(p,&(item->boundary));
+//  		if (!found){
+//  			return 0;
+//  		}
+//  		else if (item->children.empty()){
+//  			found = AccessList(item->classifier, p);
+//  			if (found){
+//  				accessFound = true;
+//  //				std::cout << "Afound at depth " << item->depth << std::endl;
+//  				return 1;
+//  			}
+//  		}
+//  		else{
+//  			check = item->children;
+//  			while (!check.empty()){
+// // 				std::cout << check.size() << std::endl;
+//  				node * it = check.front();
+//  				if(MatchesPacket(p,&(it->boundary))){
+//  					if(it->children.empty()){
+//  						found = AccessList(it->classifier, p);
+//  						if (found){
+//  							accessFound = true;
+//  //							std::cout << "found at depth " << it->depth << " classifier size " << it->classifier.size() <<  std::endl;
+//  							return 1;
+//  						}
+//  //						else{
+//  //							return 0;
+//  //						}
+//  					}
+//  					else{
+// // 						check.clear();
+//  						check.insert(check.end(), it->children.begin(), it->children.end());
+// // 						check=it->nextGen;
+//  					}
+//  				}
+//  				else{
+//  					totalNodesTraversed--;
+//  				}
+//  //				check.erase(check.begin());
+//  				if(check.size())
+//  					check.pop_front();
+//  			}
+//  		}
+// // 		std::cout << "damn!" << std::endl;
+//  	return 0;
+//  }
+
+
+// int
+// cuts::AccessTree(node*root, const Packet& p){
+
+// 	node* cur_node = root;
+// 	uint32_t cut[MAXDIMENSIONS];
+// 	for (uint32_t i = 0; i< MAXDIMENSIONS; i++)
+// 		cut[i] = 0;
+
+// 	if(!MatchesPacket(p,&(cur_node->boundary))){
+// 		return 0;
+// 	}
+//   else if (cur_node->children.empty()){
+//     return AccessList(cur_node->classifier, p);
+//   }
+//   else{
+// 	while (!cur_node->children.empty()){
+// 		if (cur_node->is_compressed){
+// //			if(1){
+// 			// if(!MatchesPacket(p,&(cur_node->boundary))){
+//    //      exit(1);
+// 			// }
+// //				std::cout << cur_node->children.size() << std::endl;
+// 			int count=0;
+// 			for (auto iter: cur_node->children){
+// 				if(MatchesPacket(p,&(iter->boundary))){
+// 					cur_node = iter;
+// 					std::cout << count << std::endl;
+// 					if (cur_node->children.empty())
+// 						return AccessList(cur_node->classifier, p);
+// 					else
+// 						break;
+// 				}
+// 				count++;
+// 			}
+// //			std::cout << "bye" << std::endl;
+// 		}
+// //		else{
+// //			int count = 0;
+// ////			std::cout << cur_node->children.size() << std::endl;
+// //			for (auto iter: cur_node->children){
+// //
+// //							if(MatchesPacket(p,&(iter->boundary))){
+// //								cur_node = iter;
+// //								std::cout << count << std::endl;
+// //								break;
+// //							}
+// //							else{
+// //								totalNodesTraversed--;
+// //							}
+// //							count++;
+// //						}
+// //		}
+// 		// TODO
+		
+// 		 // /* Hypercuts has an algorithm for lookup. Very wierd, with a lot of segmentation faults arising due to erroneous floating point operations.
+		 
+// 		else{
+// 			totalNodesTraversed++;
+
+// 			int dim[2]={0,0};
+// 			int numDim = 0;
+
+// 		for (uint32_t i = 0; i< MAXDIMENSIONS ; i++){
+// 			if (cur_node->cuts[i]>1){
+// 				double delta = (double(cur_node->boundary.field[i].high - cur_node->boundary.field[i].low + 1)/(cur_node->cuts[i]));
+// 				delta = floor(delta);
+// 				dim[numDim]=i;
+// 				numDim++;
+// 				double temp = (p[i] - cur_node->boundary.field[i].low)/delta;
+// 				cut[i] = floor(temp);
+// 				std::cout << "used " << cut[i] << " " << cur_node->Index << " " << cur_node->children.size() << " " << cur_node->cuts[0]+cur_node->cuts[1]+cur_node->cuts[2]+cur_node->cuts[3]+cur_node->cuts[4] << std::endl;
+// 			}
+// 		}
+
+// 		int index = 0;
+// 		if (numDim==1)
+// 			index = cut[dim[0]];
+// 		else if (numDim==2)
+// 			index = (cur_node->cuts[dim[0]])*cut[dim[1]] + cut[dim[0]];
+// 		list <node*>::iterator it = cur_node->children.begin();
+// 		if (index >= cur_node->children.size()){
+// 			index = cur_node->children.size() -1 ;
+// 			std::cout << "error" << std::endl;
+// 		}
+// 		int count=0;
+// 		    for(int i=0; i< index ; i++){
+// 		        ++it;
+// 		        ++count;
+// 		    }
+// 		    if (count >= cur_node->children.size()){
+// 		    			index = cur_node->children.size() -1 ;
+// 		    			std::cout << "error2" << std::endl;
+// 		    		}
+// 		cur_node = *it;
+// 		}
+// 	}
+//   }
+
+// 	return AccessList(cur_node->classifier, p);
+// }
 
 int
 cuts::AccessTrees(const Packet& p){
 
-//	node* found = NULL;
-//    for (auto item: roots){
-//    	found = AccessTree(item, p);
-//    	if (found!=NULL){
-//    		break;
-//    	}
-//    }
-//    if (found==NULL){
-//    	std::cout << "did not find rule" << std::endl;
-//    }
-//
-//    return 0;
-    for (list<TreeDetails>::iterator iter = _trees.begin(); iter != _trees.end(); iter++)
+    for (auto iter: allRoots)
     {
-        AccessTree(iter->root, p);
-        //cout << "Found color: " << c << endl;
-        if (accessFound){
-        	return 0;
+        int found = AccessTree(iter, p);
+        if (found){
+        	return 1;
         }
     }
 
@@ -2776,10 +3022,13 @@ cuts::AccessRule(const Packet& p){
 	int nodesTraversedSofar = totalNodesTraversed;
 
 	accessFound=false;
-	AccessTrees(p);
+	int found = AccessTrees(p);
 
-	if (!accessFound){
-		std::cout << "rule not found " << std::endl;
+	if (!found){
+		// std::cout << "rule not found " << std::endl;
+	}
+	else{
+		// std::cout << "rule found "<< totalNodesTraversed - nodesTraversedSofar << std::endl;
 	}
 
 	totalAccess+=1;
@@ -2788,8 +3037,9 @@ cuts::AccessRule(const Packet& p){
 }
 
 int
-cuts::CreateClassifier(const vector <Rule>& ruleset){
-
+cuts::CreateClassifier(CommandLine* cmd){
+	parseargs(cmd);
+	BuildClassifier();
 	return 0;
 }
 
@@ -2808,14 +3058,13 @@ cuts::DeleteRule(const Rule& r){
 
 unsigned int
 cuts::GetNumRules() const{
-
 	return 0;
 }
 
-unsigned int
+uint64_t
 cuts::GetMemorysize() const{
 
-	return 0;
+	return totalMemoryBytes;
 }
 
 double

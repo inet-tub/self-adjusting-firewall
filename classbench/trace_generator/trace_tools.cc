@@ -94,7 +94,7 @@ void convert_filters(int d, FilterList* filters, flist *filts){
   struct FilterList_item* fptr;
   int i = 0;
   // Convert standard 5-tuple
-  for (fptr = (*filters)(1); fptr != Null; fptr = fptr->next){
+  for (fptr = (*filters)(1); fptr != NULL; fptr = fptr->next){
     int len; unsigned low, high, tempaddr; 
     if (d >= 1) {
       // Convert SA

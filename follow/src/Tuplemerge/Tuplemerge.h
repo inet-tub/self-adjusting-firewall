@@ -8,9 +8,10 @@
 #ifndef TUPLEMERGE_TUPLEMERGE_H_
 #define TUPLEMERGE_TUPLEMERGE_H_
 
-#include "./../../tuplemerge/ElementaryClasses.h"
 #include "./../../tuplemerge/TupleMerge/TupleMergeOnline.h"
 #include "./../classifier/baseclassifier.h"
+#include "./../includes/external_includes.h"
+#include "./../cmd/CommandLine.h"
 
 namespace simulator{
 
@@ -18,7 +19,7 @@ class Tuplemerge : public BaseClassifier {
 public:
 	Tuplemerge (int limit = 10);
 	virtual ~Tuplemerge();
-	virtual int CreateClassifier(const vector<Rule>& rules);
+	virtual int CreateClassifier(CommandLine* cmd);
 
 	/* For inserting a rule. The function checks if the rule already exists, if not the rule is inserted in the datastructure. Num rules and bytes are updated  */
 	virtual unsigned int InsertRule(const Rule& r);
@@ -36,6 +37,8 @@ public:
 
 	/* Returns the time taken for creating the datastrucutre (tree/table/list) for the given ruleset. */
 	virtual double GetInitDelay() const;
+
+	std::vector<Rule> rules;
 
 private:
 	TupleMergeOnline* classifier;

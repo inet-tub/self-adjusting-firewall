@@ -21,7 +21,7 @@ FlagList::FlagList() {
 FlagList::~FlagList() {
   struct FlagListItem *temp;
   for (int i = 0; i < 256; i++){
-    while (first[i] != Null) {
+    while (first[i] != NULL) {
       temp = (*first[i]).next;
       delete(first[i]);
       first[i] = temp;
@@ -35,7 +35,7 @@ void FlagList::choose(float p, int prot, unsigned *flags, unsigned *flags_mask){
   // Check for flag spec in list
   struct FlagListItem *j;
   j = first[prot];
-  while (j != Null){
+  while (j != NULL){
     if (p < j->prob) {
       (*flags) = j->flags;
       (*flags_mask) = j->flags_mask;
@@ -83,7 +83,7 @@ void FlagList::read(FILE *fp){
 	temp->prob = probs[j];
 	temp->prev = last[prot_num];
 	temp->next = NULL;
-	if (first[prot_num] == Null){
+	if (first[prot_num] == NULL){
 	  first[prot_num] = temp;
 	} else {
 	  (*last[prot_num]).next = temp;
@@ -93,10 +93,10 @@ void FlagList::read(FILE *fp){
       // Create cummulative distribution for this protocol number
       struct FlagListItem *i;
       float total = 0;
-      for (i = first[prot_num]; i != Null; i = i->next){
+      for (i = first[prot_num]; i != NULL; i = i->next){
 	total += i->prob;
 	i->prob = total;
-	if (i->next == Null) i->prob = 1;
+	if (i->next == NULL) i->prob = 1;
       }
     }
     else done = 1;
@@ -108,8 +108,8 @@ void FlagList::read(FILE *fp){
 void FlagList::print(FILE* fp) {
   struct FlagListItem *i;
   for (int j = 0; j < 256; j++){
-    if (first[j] != Null) fprintf(fp,"%d\t",j);
-    for (i = first[j]; i != Null; i = i->next){
+    if (first[j] != NULL) fprintf(fp,"%d\t",j);
+    for (i = first[j]; i != NULL; i = i->next){
       fprintf(fp,"%.2x/%.2x,%.8f\t",i->flags,i->flags_mask,i->prob);
     }
   }
