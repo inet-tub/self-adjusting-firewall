@@ -22,7 +22,7 @@ Run the `setup.sh` script to automate the build process.
 ./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg="follow"
 ```
 ```bash
-# Efficuts
+# CutSplit
 ./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg="cutsplit"
 ```
 
