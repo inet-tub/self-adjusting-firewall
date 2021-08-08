@@ -46,10 +46,6 @@
 
 #define POINT_SIZE_BITS 32
 
-typedef uint32_t Point;
-typedef std::vector<Point> Packet;
-
-
 /* ---------------------- */
 /* From CutSplit */
 #define MAXDIMENSIONS 5
@@ -70,6 +66,16 @@ typedef std::vector<Point> Packet;
 #define PTR_SIZE 4
 #define HEADER_SIZE 4
 #define RULESIZE 4.5
+
+
+
+namespace simulator{
+
+typedef uint32_t Point;
+typedef std::vector<Point> Packet;
+
+
+
 
 typedef uint32_t Memory;
 /* ---------------------- */
@@ -284,5 +290,5 @@ inline void PrintRules(const std::vector<Rule>& rules) {
 		r.Print();
 	}
 }
-
+} /* namespace simulator */
 #endif

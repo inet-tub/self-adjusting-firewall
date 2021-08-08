@@ -26,6 +26,7 @@
 #include "./../includes/ElementaryClasses.h"
 
 //CREDIT:: REUSE INPUT READER FROM Hypersplit //
+namespace simulator{
 class  InputReader {
 public:
 
@@ -54,5 +55,6 @@ private:
 	static const int LOW = 0;
 	static const int HIGH = 1;
 };
+} /* namespace simulator */
 
 #endif

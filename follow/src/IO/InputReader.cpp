@@ -36,6 +36,7 @@
 
 using namespace std;
 
+namespace simulator{
 int InputReader::dim = 5;
 int InputReader::reps = 1;
 
@@ -433,3 +434,4 @@ vector<Rule> InputReader::ReadFilterFile(const string&  filename) {
 	}
 	in.close();
 }
+} /* namespace simulator */
