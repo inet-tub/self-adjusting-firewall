@@ -9,10 +9,8 @@ Run the `setup.sh` script to automate the build process.
 # Directories
 
 - `src/` folder contains the source code for this simulator including various algorithms, some re-implemented.
-- `tuplemerge/` folder is the original reposipority of tuplemerge algorithm. Some files from tuplemerge are a dependency for this simulator.
-	- `git clone https://github.com/drjdaly/tuplemerge.git` and copy the file `src/Tuplemerge/TupleMergeOnline.h.changed` to `tuplemerge/TupleMerge/TupleMergeOnline.h` (just a single line change here).
 - `examples/` folder contains experiment codes. Specifically a main function should go here.
-- `Default/` is the makefile location. Run `make -j` in this directory to build the simulator. After a successful make, an executable `follow` is created in this directory. Make sure to clone `tuplemerge` repository within this folder.  
+- `Default/` is the makefile location. Run `make -j` in this directory to build the simulator. After a successful make, an executable `follow` is created in this directory.  
 
 
 # Excecutable
@@ -21,10 +19,10 @@ Run the `setup.sh` script to automate the build process.
 
 ```bash
 # Follow algorithm : List based firewall
-./follow --ruleset=<path-to-a-ruleset> --trace=<path-to-a-trace>
+./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg=<follow | followfast | cutsplit | cuts>
 ```
 
 ```bash
 # Efficuts/Hicuts/Hypercuts
-./follow --ruleset=<path-to-a-ruleset> --trace=<path-to-a-trace> --
+./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg=<follow | followfast | cutsplit | cuts>
 ```
