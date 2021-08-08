@@ -19,10 +19,24 @@ Run the `setup.sh` script to automate the build process.
 
 ```bash
 # Follow algorithm : List based firewall
-./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg=<follow | followfast | cutsplit | cuts>
+./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg="follow"
+```
+```bash
+# Efficuts
+./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg="cutsplit"
 ```
 
 ```bash
-# Efficuts/Hicuts/Hypercuts
-./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg=<follow | followfast | cutsplit | cuts>
+# Efficuts
+./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg="cuts" %spfac=8 %hypercuts=1 %compress=1 %binON=1 %mergingON=1
+```
+
+```bash
+# Hypercuts
+./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg="cuts" %spfac=8 %hypercuts=1 %compress=0 %binON=0 %mergingON=0
+```
+
+```bash
+# Efficuts
+./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg="cuts" %spfac=8 %hypercuts=0 %compress=0 %binON=0 %mergingON=0
 ```
