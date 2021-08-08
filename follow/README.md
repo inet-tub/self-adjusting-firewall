@@ -37,6 +37,6 @@ Run the `setup.sh` script to automate the build process.
 ```
 
 ```bash
-# Efficuts
+# Hicuts
 ./follow %ruleset=<path-to-a-ruleset> %trace=<path-to-a-trace> %alg="cuts" %spfac=8 %hypercuts=0 %compress=0 %binON=0 %mergingON=0
 ```
