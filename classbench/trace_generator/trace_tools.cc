@@ -40,8 +40,12 @@ int header_gen(int d, FilterList* filters, FILE *fp, float a, float b, int scale
     // Select number of copies to add to header list
     // from Pareto distribution
     int Copies = MyPareto(a,b);
+
     // printf("RandFilt = %d, a = %.4f, b = %.4f, Copies = %d\n",RandFilt,a,b,Copies);
 
+    if (num_headers+Copies > threshold)
+      Copies = threshold - num_headers;
+    // printf("%d\n",Copies);
     // Add to header list
     for (int i = 0; i < Copies; i++) headers->add(new_hdr,RandFilt);
 
@@ -85,6 +89,7 @@ int MyPareto(float a, float b){
   p = drand48();
  
   double x = (double)b / pow((double)(1 - p),(double)(1/(double)a));
+
   int Num = (int)ceil(x);
 
   return Num;

@@ -8,7 +8,8 @@
 #ifndef FOLLOW_FOLLOW_H_
 #define FOLLOW_FOLLOW_H_
 
-#include "./../../tuplemerge/ElementaryClasses.h"
+#include "./../includes/ElementaryClasses.h"
+#include "./../IO/InputReader.h"
 #include "./../classifier/baseclassifier.h"
 #include "./../cmd/CommandLine.h"
 

@@ -24,16 +24,10 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 examples \
-src/Tuplemerge \
+src/CutSplit \
+src/IO \
 src/classifier \
 src/cmd \
 src/cuts \
 src/follow \
-tuplemerge/ClassBenchTraceGenerator \
-tuplemerge/IO \
-tuplemerge/OVS \
-tuplemerge/PartitionSort \
-tuplemerge \
-tuplemerge/TupleMerge \
-tuplemerge/Utilities \
 

@@ -1553,7 +1553,7 @@ cuts::RecordTreeStats()
 
   p_record->total_memory_in_KB = p_record->total_memory / 1024;
 
-  totalMemoryBytes+= p_record->total_memory;
+  totalMemoryBytes = totalMemoryBytes + p_record->ruleptr_memory + p_record->array_memory + p_record->leaf_node_memory + p_record->compressed_int_node_memory + p_record->uncompressed_int_node_memory;
 
   Statistics.push_back(p_record);
 
@@ -2741,9 +2741,9 @@ cuts::BuildClassifier(){
       this->initDelay = elapsed_milliseconds.count();
 
   // Statistics
-//  PrintStats();
+ // PrintStats();
 
-//  PrintTrees();
+ // PrintTrees();
 
 
 
@@ -2829,7 +2829,8 @@ cuts::AccessTree(node* tree, const Packet& p)
                if (found)
                  return found;
                else{
-            	   totalNodesTraversed = temp;
+                if ((*iter)->is_compressed==0)
+            	     totalNodesTraversed = temp;
 //                std::cout << "miscount" << std::endl;
                }
            }

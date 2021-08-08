@@ -54,15 +54,15 @@ main(int argc, char *argv[])
 
   // Check input parameters
   // printf("a = %.4f\n",a);
-  if (a < 0 || a > 1) {
-    fprintf(stderr,"Error: Pareto parameter a must be a value in the range (0:1)\n");
-    PrintUsage();
-  }
+  // if (a < 0 || a > 1) {
+  //   fprintf(stderr,"Error: Pareto parameter a must be a value in the range (0:1)\n");
+  //   PrintUsage();
+  // }
   // printf("b = %.4f\n",b);
-  if (b < 0 || b > 1) {
-    fprintf(stderr,"Error: Pareto parameter b must be a value in the range (0:1)\n");
-    PrintUsage();
-  }
+  // if (b < 0 || b > 1) {
+  //   fprintf(stderr,"Error: Pareto parameter b must be a value in the range (0:1)\n");
+  //   PrintUsage();
+  // }
   // printf("scale = %d\n",scale);
   if (scale <= 0) {
     fprintf(stderr,"Error: scale must be a positive integer greater than zero\n");

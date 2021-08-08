@@ -8,18 +8,12 @@ RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include tuplemerge/Utilities/subdir.mk
--include tuplemerge/TupleMerge/subdir.mk
--include tuplemerge/PartitionSort/subdir.mk
--include tuplemerge/OVS/subdir.mk
--include tuplemerge/IO/subdir.mk
--include tuplemerge/ClassBenchTraceGenerator/subdir.mk
--include tuplemerge/subdir.mk
 -include src/follow/subdir.mk
 -include src/cuts/subdir.mk
 -include src/cmd/subdir.mk
 -include src/classifier/subdir.mk
--include src/Tuplemerge/subdir.mk
+-include src/IO/subdir.mk
+-include src/CutSplit/subdir.mk
 -include examples/subdir.mk
 -include subdir.mk
 -include objects.mk
@@ -47,13 +41,27 @@ endif
 
 -include ../makefile.defs
 
+OPTIONAL_TOOL_DEPS := \
+$(wildcard ../makefile.defs) \
+$(wildcard ../makefile.init) \
+$(wildcard ../makefile.targets) \
+
+
+BUILD_ARTIFACT_NAME := follow
+BUILD_ARTIFACT_EXTENSION :=
+BUILD_ARTIFACT_PREFIX :=
+BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
+
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: follow
+all: main-build
+
+# Main-build Target
+main-build: follow
 
 # Tool invocations
-follow: $(OBJS) $(USER_OBJS)
+follow: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
 	g++  -o "follow" $(OBJS) $(USER_OBJS) $(LIBS)

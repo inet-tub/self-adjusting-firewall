@@ -8,20 +8,20 @@
 #include "./../includes/Assert.h"
 #include <stdint.h>
 #include "follow.h"
-#include "./../includes/external_includes.h"
+
 
 using namespace std;
 
 namespace simulator{
 follow::follow() {
 	head=NULL;
-    tail=NULL;
-    totalNodesTraversed=0;
-    totalAccess=0;
-    reconfigure=true;
-    fastReconfiguration=true;
-    numRules=0;
-    totalMemoryBytes=0;
+	tail=NULL;
+	totalNodesTraversed=0;
+	totalAccess=0;
+	reconfigure=true;
+	fastReconfiguration=true;
+	numRules=0;
+	totalMemoryBytes=0;
 }
 
 follow::~follow() {
@@ -44,15 +44,15 @@ bool
 follow::depends(const Rule& dependency, const Rule& r) {
 	int dims=0;
 	for (int i = 0; i < 5; i++) {
-			if ( (r.range[i][HighDim] < dependency.range[i][LowDim]) || (r.range[i][LowDim] > dependency.range[i][HighDim]) ) {
-				return false;
-			}
-		}
-		return true;
-		if (dependency.priority > r.priority)
-			return true;
-		else
+		if ( (r.range[i][HighDim] < dependency.range[i][LowDim]) || (r.range[i][LowDim] > dependency.range[i][HighDim]) ) {
 			return false;
+		}
+	}
+	return true;
+	if (dependency.priority > r.priority)
+		return true;
+	else
+		return false;
 }
 
 int
@@ -63,55 +63,60 @@ follow::CreateClassifier(CommandLine* cmd){
 	rules= InputReader::ReadFilterFile(f);
 	numRules=rules.size();
 
-    time_point<steady_clock> start, end;
-    duration<double,std::milli> elapsed_milliseconds;
+	time_point<steady_clock> start, end;
+	duration<double,std::milli> elapsed_milliseconds;
 	start = steady_clock::now();
 
-    uint32_t index = 0;
-    for (const Rule& r : rules) {
+	uint32_t index = 0;
+	for (const Rule& r : rules) {
 		/*We assume that the ruleset provided obeys dependencies in the correct order. This holds for classbench rulesets.*/
-        
+
 		// struct listNode* node = (struct listNode*) malloc(sizeof(struct listNode));
-    	struct listNode* node = new listNode;
-        node->rule = &r;
-        node->prevNode = NULL;
-        node->nextNode = NULL;
-        node->dependencies.clear();
-        node->index = index;
-        index++;
+		struct listNode* node = new listNode;
+		node->rule = &r;
+		node->prevNode = NULL;
+		node->nextNode = NULL;
+		node->dependencies.clear();
+		node->index = index;
+		index++;
 
-        if(tail != NULL){
-            tail->nextNode = node;
-            node->prevNode = tail;
-        }
-        if (head == NULL){
-            head = node;
-        }
-        tail = node;
-    }
-    totalMemoryBytes+= rules.size()*(POINTER_SIZE + POINTER_SIZE + POINTER_SIZE + INT_SIZE);
+		if(tail != NULL){
+			tail->nextNode = node;
+			node->prevNode = tail;
+		}
+		if (head == NULL){
+			head = node;
+		}
+		tail = node;
+	}
+	if (fastReconfiguration){
+		totalMemoryBytes+= rules.size()*(POINTER_SIZE + INT_SIZE);
+	}
+	else{
+		totalMemoryBytes+= rules.size()*(POINTER_SIZE);
+	}
 
-    if (fastReconfiguration){
-    // list of dependencies at each node.
-	    struct listNode* h = head;
-	    while (h!=NULL){
-	    	struct listNode* h1 = h->prevNode;
-	    	while (h1!=NULL){
-	    		if (depends(*h1->rule,*h->rule)){
-	    			h->dependencies.push_back(h1);
-	    		}
-	    		h1=h1->prevNode;
-	    	}
-	    	totalMemoryBytes+= POINTER_SIZE*h->dependencies.size();
-	    	h=h->nextNode;
-	    }
-    }
+	if (fastReconfiguration){
+		// list of dependencies at each node.
+		struct listNode* h = head;
+		while (h!=NULL){
+			struct listNode* h1 = h->prevNode;
+			while (h1!=NULL){
+				if (depends(*h1->rule,*h->rule)){
+					h->dependencies.push_back(h1);
+				}
+				h1=h1->prevNode;
+			}
+			totalMemoryBytes+= POINTER_SIZE*h->dependencies.size();
+			h=h->nextNode;
+		}
+	}
 
-    end = steady_clock::now();
-    elapsed_milliseconds = end - start;
-    initDelay = elapsed_milliseconds.count();
-    
-    return 0;
+	end = steady_clock::now();
+	elapsed_milliseconds = end - start;
+	initDelay = elapsed_milliseconds.count();
+
+	return 0;
 }
 
 unsigned int
@@ -124,22 +129,22 @@ unsigned int
 follow::DeleteRule(const Rule& r){
 
 	ASSERT(head!=NULL,"Empty list, Unexcepted when a packet is to be classified");
-		struct listNode* node = head;
-		uint32_t match=0;
-		uint32_t nodesTraversed=0;
-		// Find the rule and then delete
-		while(!match || node!=NULL){
-			if (node->rule->priority == r.priority){ // priority numbers are unique, its enough to check this
-				match=1;
-				nodesTraversed+=1;
-				node->prevNode->nextNode= node->nextNode;
-				node->nextNode->prevNode = node->prevNode;
-			}
-			else{
-				node=node->nextNode;
-				nodesTraversed+=1;
-			}
+	struct listNode* node = head;
+	uint32_t match=0;
+	uint32_t nodesTraversed=0;
+	// Find the rule and then delete
+	while(!match || node!=NULL){
+		if (node->rule->priority == r.priority){ // priority numbers are unique, its enough to check this
+			match=1;
+			nodesTraversed+=1;
+			node->prevNode->nextNode= node->nextNode;
+			node->nextNode->prevNode = node->prevNode;
 		}
+		else{
+			node=node->nextNode;
+			nodesTraversed+=1;
+		}
+	}
 	if (!match){
 		//TODO something is wrong. Could be that a rule is asked to be deleted when it does not exist.
 	}
@@ -279,41 +284,41 @@ follow::AccessRule(const Packet& p){
 
 	uint32_t index = 0;
 	while(!match && node!=NULL){
-        match=node->rule->MatchesPacket(p);
-        nodesTraversed++;
-        node->index=index;
-        index++;
-        if (!match){
-        	node=node->nextNode;
-        }
+		match=node->rule->MatchesPacket(p);
+		nodesTraversed++;
+		node->index=index;
+		index++;
+		if (!match){
+			node=node->nextNode;
+		}
 	}
 
 	if(!match){
 		std::cout << "rule not found "  << std::endl;
 	}
-	
+
 	// Reconfiguration
 	/* Nothing to do if the node is head. Otherwise, "follow" algorithm */
 	struct listNode* dnode= node;
 
 	if( dnode!=NULL && dnode!=head && reconfigure==true){
 
-    	struct listNode* temp = dnode->prevNode;
+		struct listNode* temp = dnode->prevNode;
 
-    	/* starting from node which has been accessed before, search backwards towards the head to find a dependency and recurse */
+		/* starting from node which has been accessed before, search backwards towards the head to find a dependency and recurse */
 
-    	int count=0;
-    	while (temp!=NULL){
+		int count=0;
+		while (temp!=NULL){
 
-    		temp = findDependency(dnode, &nodesTraversed);
+			temp = findDependency(dnode, &nodesTraversed);
 
-	    	/* if a dependency is found then move the accessed node just behind the dependency */
-    			/* node moves behind temp */
-	    		mtf(temp,dnode);
+			/* if a dependency is found then move the accessed node just behind the dependency */
+			/* node moves behind temp */
+			mtf(temp,dnode);
 
-	    		dnode=temp;
+			dnode=temp;
 
-    	}
+		}
 
 	}
 	totalNodesTraversed+=nodesTraversed;
@@ -325,7 +330,7 @@ follow::AccessRule(const Packet& p){
 
 unsigned int 
 follow:: GetNumRules() const{
-    return numRules;
+	return numRules;
 }
 
 uint64_t

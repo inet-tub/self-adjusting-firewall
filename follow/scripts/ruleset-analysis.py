@@ -17,8 +17,6 @@ import sys
 
 # ruleset = "./../../classbench/db_generator/MyFilters10k"
 ruleset = sys.argv[1]
-outputfile = sys.argv[2]
-nest_value = sys.argv[3]
 
 srcIP=list()
 dstIP=list()
@@ -89,7 +87,7 @@ rules["dstport"]=dstPort
 rules["protocol"]=protocol
 rules["priority"]=priority
 
-print("NumRules %d"%prio)
+# print("NumRules %d"%prio)
 
 # #%%
 #
@@ -105,12 +103,9 @@ def checkOverlap(rule1, rule2):
 
 
 
-print("start building G")
+# print("start building G")
 G = nx.DiGraph()
 for i in range(prio):
-    if i % 500 == 0:
-        print(i)
-
     G.add_node(i)
 
     for j in range(i):
@@ -121,12 +116,11 @@ for i in range(prio):
 #%%
 
 
-print("Start computing the longest path / depth")
+# print("Start computing the longest path / depth")
 depth=nx.dag_longest_path(G)
-print("Depth %d"%len(depth))
+# print("Depth %d"%len(depth))
 
-with open(outputfile, "w") as file:
-    file.write(f"{ruleset};{prio};{nest_value};{len(depth)};\n")
+degrees = [G.out_degree(n) for n in G.nodes()]
+ancestors = [len(nx.ancestors(G,n)) for n in G.nodes()]
 
-ruleset = sys.argv[1]
-outputfile = sys.argv[2]
+print("AverageDegree %f Depth %d NumRules %d Ancestors %f"%(np.mean(degrees),len(depth),prio,np.mean(ancestors)))

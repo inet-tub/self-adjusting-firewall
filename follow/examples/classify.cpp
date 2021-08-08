@@ -13,13 +13,18 @@
 #include <chrono>
 #include <string>
 #include <sstream>
+#include <fstream>
 
-#include "./../src/includes/external_includes.h"
+#include "./../src/includes/ElementaryClasses.h"
+#include "./../src/IO/InputReader.h"
+
 #include "./../src/includes/Assert.h"
 #include "./../src/cmd/CommandLine.h"
 
 #include "./../src/follow/follow.h"
 #include "./../src/cuts/cuts.h"
+
+#include "./../src/CutSplit/CutSplit.h"
 
 using namespace std;
 using namespace simulator;
@@ -106,8 +111,9 @@ int trials=1;
 	}
 	else if (alg=="list"){
 		follow classifier;
-		classifier.CreateClassifier(&cmd);
 		classifier.setReconfigure(false);
+		classifier.setFastReconfigure(false);
+		classifier.CreateClassifier(&cmd);
 
 		std::cout << "InitDelayms " << classifier.GetInitDelay() << std::endl;
 		std::cout << "TotalMemoryBytes " <<classifier.GetMemorysize() << std::endl;
@@ -117,6 +123,19 @@ int trials=1;
 			classifier.AccessRule(p);
 		}
 	std::cout << "AverageTraversed " <<classifier.GetAvgNodesTraversed()<< std::endl;
+	}
+	else if (alg=="cutsplit"){
+		CutSplit cutsplit;
+		cutsplit.CreateClassifier(&cmd);
+		std::cout << "InitDelayms " << cutsplit.GetInitDelay() << std::endl;
+		std::cout << "TotalMemoryBytes " <<cutsplit.GetMemorysize() << std::endl;
+		uint32_t miss=0;
+		for (auto p:trace){
+			miss+=cutsplit.AccessRule(p);
+		}
+		std::cout << "AverageTraversed " <<cutsplit.GetAvgNodesTraversed()<< std::endl;
+		std::cout << "Missed " << miss << std::endl;
+
 	}
 
 	return 0;
