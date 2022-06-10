@@ -58,7 +58,7 @@ follow::depends(const Rule& dependency, const Rule& r) {
 int
 follow::CreateClassifier(CommandLine* cmd){
 
-	string f = "/home/vamsi/src/phd/self-adjusting-firewall/classbench/db_generator/MyFilters10k";
+	string f = "/home/vamsi/src/phd/codebase/self-adjusting-firewall/classbench/db_generator/MyFilters10k";
 	cmd->Get("ruleset", f);
 	rules= InputReader::ReadFilterFile(f);
 	numRules=rules.size();

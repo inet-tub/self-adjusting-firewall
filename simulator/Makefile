@@ -8,4 +8,4 @@ classify: $(SRCS)
 	${CPP} ${CFLAGS} -o $(BUILDDIR)/classify $(SRCS)
 
 clean:
-	rm -r build/*
+	rm -r ${BUILDDIR}/*
