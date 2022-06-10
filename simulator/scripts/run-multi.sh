@@ -72,22 +72,25 @@ if [[ $EXP == "follow" || $EXP == "all" ]];then
 									echo "waiting..."
 									sleep 1
 								done
-								# cat /tmp/output-runs
-								avgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $2}')
-								minavgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $2}')
-								maxavgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $2}')
+								cat /tmp/output-runs | awk '{print $2}' > /tmp/output-run1
+								avgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "mean" | awk '{print $2}')
+								minavgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "min" | awk '{print $2}')
+								maxavgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "max" | awk '{print $2}')
 
-								avgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $4}')
-								minavgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $4}')
-								maxavgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $4}')
+								cat /tmp/output-runs | awk '{print $4}' > /tmp/output-run2
+								avgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "mean" | awk '{print $2}')
+								minavgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "min" | awk '{print $2}')
+								maxavgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "max" | awk '{print $2}')
 
-								maxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $6}')
-								minmaxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $6}')
-								maxmaxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $6}')
+								cat /tmp/output-runs | awk '{print $6}' > /tmp/output-run3
+								maxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "mean" | awk '{print $2}')
+								minmaxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "min" | awk '{print $2}')
+								maxmaxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "max" | awk '{print $2}')
 
-								maxreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $8}')
-								minreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $8}')
-								maxreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $8}')
+								cat /tmp/output-runs | awk '{print $8}' > /tmp/output-run4
+								maxreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "mean" | awk '{print $2}')
+								minreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "min" | awk '{print $2}')
+								maxreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "max" | awk '{print $2}')
 
 								echo "RESULT follow $NUM_RULES $PARAM_FILE $Pa $Pb $avgcostpereq $avgreqpercost $maxcostpereq $maxreqpercost"
 							done
@@ -130,22 +133,25 @@ if [[ $EXP == "followfast" || $EXP == "all" ]];then
 									echo "waiting..."
 									sleep 1
 								done
-								# cat /tmp/output-runs
-								avgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $2}')
-								minavgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $2}')
-								maxavgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $2}')
+								cat /tmp/output-runs | awk '{print $2}' > /tmp/output-run1
+								avgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "mean" | awk '{print $2}')
+								minavgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "min" | awk '{print $2}')
+								maxavgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "max" | awk '{print $2}')
 
-								avgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $4}')
-								minavgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $4}')
-								maxavgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $4}')
+								cat /tmp/output-runs | awk '{print $4}' > /tmp/output-run2
+								avgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "mean" | awk '{print $2}')
+								minavgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "min" | awk '{print $2}')
+								maxavgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "max" | awk '{print $2}')
 
-								maxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $6}')
-								minmaxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $6}')
-								maxmaxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $6}')
+								cat /tmp/output-runs | awk '{print $6}' > /tmp/output-run3
+								maxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "mean" | awk '{print $2}')
+								minmaxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "min" | awk '{print $2}')
+								maxmaxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "max" | awk '{print $2}')
 
-								maxreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $8}')
-								minreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $8}')
-								maxreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $8}')
+								cat /tmp/output-runs | awk '{print $8}' > /tmp/output-run4
+								maxreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "mean" | awk '{print $2}')
+								minreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "min" | awk '{print $2}')
+								maxreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "max" | awk '{print $2}')
 
 								echo "RESULT followfast $NUM_RULES $PARAM_FILE $Pa $Pb $avgcostpereq $avgreqpercost $maxcostpereq $maxreqpercost"
 							done
@@ -187,22 +193,25 @@ if [[ $EXP == "list" || $EXP == "all" ]];then
 									echo "waiting..."
 									sleep 1
 								done
-								# cat /tmp/output-runs
-								avgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $2}')
-								minavgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $2}')
-								maxavgcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $2}')
+								cat /tmp/output-runs | awk '{print $2}' > /tmp/output-run1
+								avgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "mean" | awk '{print $2}')
+								minavgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "min" | awk '{print $2}')
+								maxavgcostpereq=$(python3 ./mean.py /tmp/output-run1 | grep "max" | awk '{print $2}')
 
-								avgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $4}')
-								minavgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $4}')
-								maxavgreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $4}')
+								cat /tmp/output-runs | awk '{print $4}' > /tmp/output-run2
+								avgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "mean" | awk '{print $2}')
+								minavgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "min" | awk '{print $2}')
+								maxavgreqpercost=$(python3 ./mean.py /tmp/output-run2 | grep "max" | awk '{print $2}')
 
-								maxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $6}')
-								minmaxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $6}')
-								maxmaxcostpereq=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $6}')
+								cat /tmp/output-runs | awk '{print $6}' > /tmp/output-run3
+								maxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "mean" | awk '{print $2}')
+								minmaxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "min" | awk '{print $2}')
+								maxmaxcostpereq=$(python3 ./mean.py /tmp/output-run3 | grep "max" | awk '{print $2}')
 
-								maxreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "mean" | awk '{print $8}')
-								minreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "min" | awk '{print $8}')
-								maxreqpercost=$(python3 ./mean.py /tmp/output-runs | grep "max" | awk '{print $8}')
+								cat /tmp/output-runs | awk '{print $8}' > /tmp/output-run4
+								maxreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "mean" | awk '{print $2}')
+								minreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "min" | awk '{print $2}')
+								maxreqpercost=$(python3 ./mean.py /tmp/output-run4 | grep "max" | awk '{print $2}')
 
 								echo "RESULT list $NUM_RULES $PARAM_FILE $Pa $Pb $avgcostpereq $avgreqpercost $maxcostpereq $maxreqpercost"
 							done
