@@ -13,6 +13,9 @@ from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FormatStrFormatter
 
+# plt.style.use('grayscale')
+# plt.cm.gray
+plt.rcParams.update({'font.size': 18})
 #%%
 
 df = pd.read_csv('multiThreadResults.dat',delimiter=' ')
@@ -21,14 +24,14 @@ fig, ax = plt.subplots(1,1)
 
 dfMrf = df[df["ALG"]=="follow"]
 
-ax.plot(dfMrf["Threads"],1/dfMrf["AvgCostPerReq"],label="MRF",lw=2, marker='s',markersize=10)
-ax.plot(dfMrf["Threads"], [ 1/(list(dfMrf["AvgCostPerReq"])[0]/(i**2)) for i in dfMrf["Threads"]],label="quadratic",lw=2, marker='^',markersize=10)
-ax.plot(dfMrf["Threads"], [ 1/(list(dfMrf["AvgCostPerReq"])[0]/(i)) for i in dfMrf["Threads"]],label="linear",lw=2, marker='.',markersize=10)
+ax.plot(dfMrf["Threads"],1/dfMrf["AvgCostPerReq"],label="MRF",lw=2, marker='s',markersize=10,c="0",ls='-',)
+ax.plot(dfMrf["Threads"], [ 1/(list(dfMrf["AvgCostPerReq"])[0]/(i**2)) for i in dfMrf["Threads"]],label="quadratic",lw=2, ls='--', marker='^',markersize=10,c="0.6")
+ax.plot(dfMrf["Threads"], [ 1/(list(dfMrf["AvgCostPerReq"])[0]/(i)) for i in dfMrf["Threads"]],label="linear",lw=2, ls='dotted', marker='.',markersize=10,c="0.5")
 dfMrf = df[df["ALG"]=="efficuts"]
 # ax.plot(dfMrf["Threads"],1/dfMrf["AvgCostPerReq"],label="efficuts",lw=2, marker='x',markersize=10)
 
 ax.set_yscale('log')
-ax.legend()
+ax.legend(framealpha=0.5)
 ax.xaxis.grid(True,ls='--')
 ax.yaxis.grid(True,ls='--')
 ax.set_xlabel("Threads")
