@@ -5,7 +5,7 @@ Please consider citing the following papers if you use this repository in your r
 ```bib
 @inproceedings{partially-ordered-lists,
   author = {Addanki, Vamsi and Pacut, Maciej and Pourdamghani, Arash and Retvari, Gabor and Schmid, Stefan and Vanerio, Juan},
-  title = {{PowerTCP}: Pushing the Performance Limits of Datacenter Networks},
+  title = {Self-Adjusting Partially Ordered Lists},
   booktitle = {IEEE International Conference on Computer Communications (INFOCOM 2024)},
   year = {2023},
 }
